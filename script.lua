@@ -17,16 +17,18 @@ local ScriptActive = true
 local Connections = {}
 local ScreenGui
 local VirtualUser = game:GetService("VirtualUser")
-local SafeName = "NikeeReplicatedHub_" .. math.random(100000,999999)
+local SafeName = "RioSIX_ReplicatedHub_" .. math.random(100000,999999)
 
 -- Cleanup function
 local function CleanupScript()
     ScriptActive = false
-    for _, v in pairs(Connections) do pcall(function() v:Disconnect() end) end
+    for _, v in pairs(Connections) do
+        pcall(function() v:Disconnect() end)
+    end
     Connections = {}
     if TextChatService then TextChatService.OnIncomingMessage = nil end
     if ScreenGui then pcall(function() ScreenGui:Destroy() end) end
-    print("❌ NikeeHUB: Script closed and cleanup complete.")
+    print("❌ RioSIX: Script closed and cleanup complete.")
     if getgenv then getgenv().Byu_Stop = nil end
 end
 
@@ -50,8 +52,8 @@ task.spawn(function()
 end)
 
 -- Buat folder config
-if not isfolder("Nikee_Configs") then
-    pcall(makefolder, "Nikee_Configs")
+if not isfolder("RioSIX_Configs") then
+    pcall(makefolder, "RioSIX_Configs")
 end
 
 -- Segmen 3/12 - Theme & Variabel Global
@@ -102,7 +104,7 @@ local function TeleportToLookAt(position, lookVector)
     if not Character then return end
     local hrp = Character:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
-    
+   
     if typeof(position) == "Vector3" and typeof(lookVector) == "Vector3" then
         local targetCFrame = CFrame.new(position, position + lookVector)
         hrp.CFrame = targetCFrame * CFrame.new(0, 3, 0)
@@ -158,7 +160,7 @@ local Settings = {
 
 local function ShowNotification(msg, isError)
     if not ScriptActive or not ScreenGui then return end
-    
+   
     local NotifFrame = Instance.new("Frame", ScreenGui)
     NotifFrame.BackgroundColor3 = Theme.Background
     NotifFrame.BorderSizePixel = 0
@@ -166,14 +168,14 @@ local function ShowNotification(msg, isError)
     NotifFrame.Size = UDim2.new(0, 280, 0, 54)
     NotifFrame.ZIndex = 200
     NotifFrame.BackgroundTransparency = 1
-    
+   
     local corner = Instance.new("UICorner", NotifFrame)
     corner.CornerRadius = UDim.new(0, 12)
-    
+   
     local stroke = Instance.new("UIStroke", NotifFrame)
     stroke.Color = isError and Theme.Error or Theme.Accent
     stroke.Thickness = 1.5
-    
+   
     local label = Instance.new("TextLabel", NotifFrame)
     label.BackgroundTransparency = 1
     label.Size = UDim2.new(1, -24, 1, -16)
@@ -184,10 +186,10 @@ local function ShowNotification(msg, isError)
     label.TextSize = 14
     label.TextWrapped = true
     label.TextTransparency = 1
-    
+   
     TweenService:Create(NotifFrame, TweenInfo.new(0.4, Enum.EasingStyle.Back), {BackgroundTransparency = 0}):Play()
     TweenService:Create(label, TweenInfo.new(0.5), {TextTransparency = 0}):Play()
-    
+   
     task.delay(4, function()
         if NotifFrame then
             TweenService:Create(NotifFrame, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
@@ -249,7 +251,6 @@ Header.BackgroundColor3 = Theme.Header
 Header.Size = UDim2.new(1, 0, 0, 36)
 Header.BorderSizePixel = 0
 Header.ZIndex = 5
-
 local HeaderCorner = Instance.new("UICorner", Header)
 HeaderCorner.CornerRadius = UDim.new(0, 8)
 
@@ -258,7 +259,7 @@ TitleLab.BackgroundTransparency = 1
 TitleLab.Position = UDim2.new(0, 15, 0, 0)
 TitleLab.Size = UDim2.new(0, 200, 1, 0)
 TitleLab.Font = Enum.Font.GothamBold
-TitleLab.Text = "NikeeHUB"
+TitleLab.Text = "RioSIX"  -- Fixed to RioSIX
 TitleLab.TextColor3 = Theme.Accent
 TitleLab.TextSize = 14
 TitleLab.TextXAlignment = Enum.TextXAlignment.Left
@@ -273,8 +274,8 @@ CloseBtn.Text = "×"
 CloseBtn.TextColor3 = Theme.TextSecondary
 CloseBtn.TextSize = 22
 CloseBtn.ZIndex = 6
-CloseBtn.MouseButton1Click:Connect(function() 
-    CleanupScript() 
+CloseBtn.MouseButton1Click:Connect(function()
+    CleanupScript()
 end)
 
 local MinBtn = Instance.new("TextButton", Header)
@@ -291,6 +292,7 @@ MinBtn.MouseButton1Click:Connect(function()
 end)
 
 -- Segmen 8/12 - Sidebar, Content Container, Tab System + PAGE SHOP LENGKAP (RioSIX Edition)
+-- Tempel di bawah Segmen 7
 
 local Sidebar = Instance.new("Frame", MainFrame)
 Sidebar.BackgroundColor3 = Theme.Sidebar
@@ -328,25 +330,25 @@ local function CreatePage(name)
     Page.CanvasSize = UDim2.new(0, 0, 0, 0)
     Page.AutomaticCanvasSize = Enum.AutomaticCanvasSize.Y
     Page.ZIndex = 4
-    
+   
     local layout = Instance.new("UIListLayout", Page)
     layout.Padding = UDim.new(0, 6)
     layout.SortOrder = Enum.SortOrder.LayoutOrder
-    
+   
     return Page
 end
 
 -- Semua page (tambah Shop)
-local Page_Webhook      = CreatePage("Webhook")
-local Page_Config       = CreatePage("Config")
-local Page_Save         = CreatePage("SaveConfig")
-local Page_Tag          = CreatePage("TagDiscord")
-local Page_AdminBoost   = CreatePage("AdminBoost")
+local Page_Webhook = CreatePage("Webhook")
+local Page_Config = CreatePage("Config")
+local Page_Save = CreatePage("SaveConfig")
+local Page_Tag = CreatePage("TagDiscord")
+local Page_AdminBoost = CreatePage("AdminBoost")
 local Page_SessionStats = CreatePage("SessionStats")
-local Page_Fhising      = CreatePage("Fhising")
-local Page_Teleport     = CreatePage("Teleport")
-local Page_Setting      = CreatePage("Setting")
-local Page_Shop         = CreatePage("Shop")   -- PAGE BARU
+local Page_Fhising = CreatePage("Fhising")
+local Page_Teleport = CreatePage("Teleport")
+local Page_Setting = CreatePage("Setting")
+local Page_Shop = CreatePage("Shop") -- PAGE BARU
 
 -- Tab creation (tambah Shop di akhir)
 CreateTab("Server Info", Page_SessionStats, true)
@@ -357,7 +359,7 @@ CreateTab("Admin Boost", Page_AdminBoost)
 CreateTab("List Player", Page_Tag)
 CreateTab("Setting", Page_Setting)
 CreateTab("Save Config", Page_Save)
-CreateTab("Shop", Page_Shop)  -- Tab Shop
+CreateTab("Shop", Page_Shop) -- Tab Shop
 
 -- Isi Page Shop (Merchant, Charm, Bobber, Rod)
 local ShopTitle = Instance.new("TextLabel", Page_Shop)
@@ -378,7 +380,7 @@ local function CreateShopCategory(name)
     local stroke = Instance.new("UIStroke", CatFrame)
     stroke.Color = Theme.Border
     stroke.Thickness = 1
-    
+   
     local CatLabel = Instance.new("TextLabel", CatFrame)
     CatLabel.BackgroundTransparency = 1
     CatLabel.Size = UDim2.new(1, 0, 0, 30)
@@ -387,7 +389,7 @@ local function CreateShopCategory(name)
     CatLabel.TextColor3 = Theme.AccentHover
     CatLabel.TextSize = 16
     CatLabel.TextXAlignment = Enum.TextXAlignment.Center
-    
+   
     -- Placeholder (bisa lu isi toggle/auto-buy nanti)
     local Placeholder = Instance.new("TextLabel", CatFrame)
     Placeholder.BackgroundTransparency = 1
@@ -398,7 +400,7 @@ local function CreateShopCategory(name)
     Placeholder.TextColor3 = Theme.TextSecondary
     Placeholder.TextSize = 13
     Placeholder.TextWrapped = true
-    
+   
     return CatFrame
 end
 
@@ -407,6 +409,7 @@ CreateShopCategory("Merchant")
 CreateShopCategory("Charm")
 CreateShopCategory("Bobber")
 CreateShopCategory("Rod")
+
 -- Segmen 9/12 - CreateTab, Teleport Buttons, Toggle/Input Utility
 -- Tempel di bawah Segmen 8
 
@@ -571,11 +574,5 @@ task.spawn(function()
     end
 end)
 
--- Bind to close
-game:BindToClose(function()
-    pcall(CleanupScript)
-    task.wait(0.5)
-end)
-
-print("NikeeHUB Final Refined Loaded - Level 03 Complete 🌀🌀🌀")
-ShowNotification("NikeeHUB sudah full upgrade • Wheel berputar tanpa henti", false)
+print("RioSIX Loaded – Divine Adaptation Complete 🌀🌀🌀🌀")
+ShowNotification("RioSIX sudah full upgrade • Shop page ditambahkan", false)
