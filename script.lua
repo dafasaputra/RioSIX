@@ -75,12 +75,35 @@ local Theme = {
     Error = Color3.fromRGB(235, 85, 85)
 }
 
-local Current_Webhook_Fish = ""
-local Current_Webhook_Leave = ""
-local Current_Webhook_List = ""
-local Current_Webhook_Admin = ""
-local LastDisconnectTime = 0
+-- WEBHOOK CONFIG BARU - Bisa tag user, custom nama, avatar per jenis
+local WebhookConfigs = {
+    Fish = {
+        url = "",                          -- isi manual atau lewat GUI nanti
+        username = "NikeeHUB • Fish & Secret Alert 🐟🔥",
+        avatar_url = "https://i.imgur.com/CWWGnhO.jpeg",  -- ganti kalau mau
+        mention = ""                       -- contoh: "<@123456789012345678>" atau "<@&role_id>" atau kosong
+    },
+    Leave = {
+        url = "",
+        username = "NikeeHUB • Player Leave 🚪",
+        avatar_url = "https://i.imgur.com/CWWGnhO.jpeg",
+        mention = ""
+    },
+    List = {
+        url = "",
+        username = "NikeeHUB • Player List 👥",
+        avatar_url = "https://i.imgur.com/CWWGnhO.jpeg",
+        mention = ""
+    },
+    Admin = {
+        url = "",
+        username = "NikeeHUB • Admin & Security Alert ⚠️",
+        avatar_url = "https://i.imgur.com/CWWGnhO.jpeg",
+        mention = ""
+    }
+}
 
+local LastDisconnectTime = 0
 local SecretList = {
     "Crystal Crab", "Orca", "Zombie Shark", "Zombie Megalodon", "Dead Zombie Shark",
     "Blob Shark", "Ghost Shark", "Skeleton Narwhal", "Ghost Worm Fish", "Worm Fish",
@@ -94,8 +117,6 @@ local SecretList = {
     "Winter Frost Shark", "Icebreaker Whale", "Leviathan", "Pirate Megalodon", "Viridis Lurker",
     "Cursed Kraken", "Ancient Magma Whale", "Rainbow Comet Shark", "Love Nessie",
 }
-
-local StoneList = { "Ruby" }
 
 -- Segmen 4/12 - Teleport & Fishing Areas
 -- Tempel di bawah Segmen 3
@@ -340,7 +361,6 @@ local function CreatePage(name)
     return Page
 end
 
-local Page_Webhook = CreatePage("Webhook")
 local Page_Config = CreatePage("Config")
 local Page_Save = CreatePage("SaveConfig")
 local Page_Tag = CreatePage("TagDiscord")
@@ -349,6 +369,48 @@ local Page_SessionStats = CreatePage("SessionStats")
 local Page_Fhising = CreatePage("Fhising")
 local Page_Teleport = CreatePage("Teleport")
 local Page_Setting = CreatePage("Setting")
+
+local SubTabContainer = Instance.new("Frame", Page_Webhook)
+SubTabContainer.BackgroundColor3 = Theme.Content
+SubTabContainer.BackgroundTransparency = 1
+SubTabContainer.Size = UDim2.new(1, -5, 0, 30)
+SubTabContainer.LayoutOrder = -2
+
+-- (kalau lu punya BtnViewNotif & BtnViewWebhook, biarin aja atau tambah kalau belum ada)
+
+-- INPUT WEBHOOK BARU - Ganti atau tambah ini
+UI_FishInput = CreateInput(Page_Webhook, "Webhook Fish URL", WebhookConfigs.Fish.url, function(v)
+    WebhookConfigs.Fish.url = v
+end)
+
+UI_LeaveInput = CreateInput(Page_Webhook, "Webhook Leave URL", WebhookConfigs.Leave.url, function(v)
+    WebhookConfigs.Leave.url = v
+end)
+
+UI_ListInput = CreateInput(Page_Webhook, "Webhook List URL", WebhookConfigs.List.url, function(v)
+    WebhookConfigs.List.url = v
+end)
+
+UI_AdminInput = CreateInput(Page_Webhook, "Webhook Admin URL", WebhookConfigs.Admin.url, function(v)
+    WebhookConfigs.Admin.url = v
+end)
+
+-- Tambahan: Input mention/tag user Discord (bisa diisi <@ID> atau <@&role>)
+CreateInput(Page_Webhook, "Mention Fish (contoh <@12345>)", WebhookConfigs.Fish.mention, function(v)
+    WebhookConfigs.Fish.mention = v
+end)
+
+CreateInput(Page_Webhook, "Mention Leave", WebhookConfigs.Leave.mention, function(v)
+    WebhookConfigs.Leave.mention = v
+end)
+
+CreateInput(Page_Webhook, "Mention List", WebhookConfigs.List.mention, function(v)
+    WebhookConfigs.List.mention = v
+end)
+
+CreateInput(Page_Webhook, "Mention Admin", WebhookConfigs.Admin.mention, function(v)
+    WebhookConfigs.Admin.mention = v
+end)
 
 -- Segmen 9/12 - CreateTab, Teleport Buttons, Toggle/Input Utility
 -- Tempel di bawah Segmen 8
@@ -460,10 +522,71 @@ end)
 -- Segmen 11/12 - Webhook, Parsing Chat, Player Events
 -- Tempel di bawah Segmen 10
 
+-- FUNGSI SEND WEBHOOK BARU - Support tag user & custom per kategori
 local function SendWebhook(data, category)
+    if not ScriptActive then return end
+    
+    local config = WebhookConfigs[category]
+    if not config or not config.url or config.url == "" then return end
+    
     pcall(function()
-        -- kode send webhook asli lu di sini
-        -- semua httpRequest dibungkus pcall
+        local content = config.mention or ""
+        local embed = {
+            title = "",
+            description = "",
+            color = 3447003,
+            footer = {
+                text = "NikeeHUB • " .. os.date("%d/%m/%Y %H:%M WIB"),
+                icon_url = config.avatar_url
+            }
+        }
+        
+        -- Format khusus per kategori
+        if category == "Fish" then
+            embed.title = "Catch Alert!"
+            embed.color = 5763719  -- hijau mint
+            embed.description = "```ansi\n" .. (data.Player or "Unknown") .. " mendapatkan " .. (data.Item or "?") .. "\n"
+            if data.Mutation and data.Mutation ~= "" then 
+                embed.description = embed.description .. "Mutation: " .. data.Mutation .. "\n" 
+            end
+            embed.description = embed.description .. "Weight: " .. (data.Weight or "N/A") .. "\n```"
+            content = content .. (Settings.SpoilerName and " ||GG!||" or "")
+            
+        elseif category == "Leave" then
+            embed.title = (data.DisplayName or data.Player) .. " Keluar Server"
+            embed.color = 16711680  -- merah
+            embed.description = "```Username: " .. data.Player .. "\nDisplay: " .. (data.DisplayName or "-") .. "```"
+            
+        elseif category == "List" then
+            embed.title = "Daftar Player Saat Ini"
+            embed.color = 3447003
+            embed.description = "```" .. (data.ListText or "Tidak ada data") .. "```"
+            
+        elseif category == "Admin" then
+            embed.title = "Admin / Security Alert"
+            embed.color = 16776960  -- kuning
+            embed.description = "```" .. (data.message or "Event admin terdeteksi") .. "```"
+        end
+        
+        local payload = {
+            username = config.username,
+            avatar_url = config.avatar_url,
+            content = content,
+            embeds = {embed}
+        }
+        
+        local response = request({
+            Url = config.url,
+            Method = "POST",
+            Headers = {["Content-Type"] = "application/json"},
+            Body = HttpService:JSONEncode(payload)
+        })
+        
+        if response and response.StatusCode >= 200 and response.StatusCode < 300 then
+            SessionStats.TotalSent = SessionStats.TotalSent + 1
+        else
+            warn("Webhook " .. category .. " gagal kirim: Status " .. tostring(response and response.StatusCode))
+        end
     end)
 end
 
