@@ -353,13 +353,13 @@ local Page_Shop = CreatePage("Shop") -- PAGE BARU
 -- Tab creation (tambah Shop di akhir)
 CreateTab("Server Info", Page_SessionStats, true)
 CreateTab("Fhising", Page_Fhising)
+CreateTab("Shop", Page_Shop) -- Tab Shop
 CreateTab("Teleport", Page_Teleport)
 CreateTab("Notification", Page_Webhook)
 CreateTab("Admin Boost", Page_AdminBoost)
 CreateTab("List Player", Page_Tag)
 CreateTab("Setting", Page_Setting)
 CreateTab("Save Config", Page_Save)
-CreateTab("Shop", Page_Shop) -- Tab Shop
 
 -- Isi Page Shop (Merchant, Charm, Bobber, Rod)
 local ShopTitle = Instance.new("TextLabel", Page_Shop)
@@ -574,5 +574,18 @@ task.spawn(function()
     end
 end)
 
+-- Tunggu GUI siap
+task.wait(0.5)
 print("RioSIX Loaded – Divine Adaptation Complete 🌀🌀🌀🌀")
-ShowNotification("RioSIX sudah full upgrade • Shop page ditambahkan", false)
+if ScreenGui and ScreenGui.Parent then
+    ShowNotification("RioSIX sudah full upgrade • Shop page ditambahkan", false)
+else
+    print("RioSIX: GUI gagal muncul - check executor support")
+end-- Tunggu GUI siap
+task.wait(0.5)
+print("RioSIX Loaded – Divine Adaptation Complete 🌀🌀🌀🌀")
+if ScreenGui and ScreenGui.Parent then
+    ShowNotification("RioSIX sudah full upgrade • Shop page ditambahkan", false)
+else
+    print("RioSIX: GUI gagal muncul - check executor support")
+end
