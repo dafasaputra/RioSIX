@@ -290,8 +290,7 @@ MinBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = false
 end)
 
--- Segmen 8/12 - Sidebar, Content Container, Tab System
--- Tempel di bawah Segmen 7
+-- Segmen 8/12 - Sidebar, Content Container, Tab System + PAGE SHOP LENGKAP (RioSIX Edition)
 
 local Sidebar = Instance.new("Frame", MainFrame)
 Sidebar.BackgroundColor3 = Theme.Sidebar
@@ -337,16 +336,77 @@ local function CreatePage(name)
     return Page
 end
 
-local Page_Webhook = CreatePage("Webhook")
-local Page_Config = CreatePage("Config")
-local Page_Save = CreatePage("SaveConfig")
-local Page_Tag = CreatePage("TagDiscord")
-local Page_AdminBoost = CreatePage("AdminBoost")
+-- Semua page (tambah Shop)
+local Page_Webhook      = CreatePage("Webhook")
+local Page_Config       = CreatePage("Config")
+local Page_Save         = CreatePage("SaveConfig")
+local Page_Tag          = CreatePage("TagDiscord")
+local Page_AdminBoost   = CreatePage("AdminBoost")
 local Page_SessionStats = CreatePage("SessionStats")
-local Page_Fhising = CreatePage("Fhising")
-local Page_Teleport = CreatePage("Teleport")
-local Page_Setting = CreatePage("Setting")
+local Page_Fhising      = CreatePage("Fhising")
+local Page_Teleport     = CreatePage("Teleport")
+local Page_Setting      = CreatePage("Setting")
+local Page_Shop         = CreatePage("Shop")   -- PAGE BARU
 
+-- Tab creation (tambah Shop di akhir)
+CreateTab("Server Info", Page_SessionStats, true)
+CreateTab("Fhising", Page_Fhising)
+CreateTab("Teleport", Page_Teleport)
+CreateTab("Notification", Page_Webhook)
+CreateTab("Admin Boost", Page_AdminBoost)
+CreateTab("List Player", Page_Tag)
+CreateTab("Setting", Page_Setting)
+CreateTab("Save Config", Page_Save)
+CreateTab("Shop", Page_Shop)  -- Tab Shop
+
+-- Isi Page Shop (Merchant, Charm, Bobber, Rod)
+local ShopTitle = Instance.new("TextLabel", Page_Shop)
+ShopTitle.BackgroundTransparency = 1
+ShopTitle.Size = UDim2.new(1, 0, 0, 40)
+ShopTitle.Font = Enum.Font.GothamBlack
+ShopTitle.Text = "RIO SIX SHOP"
+ShopTitle.TextColor3 = Theme.Accent
+ShopTitle.TextSize = 18
+ShopTitle.TextXAlignment = Enum.TextXAlignment.Center
+
+local function CreateShopCategory(name)
+    local CatFrame = Instance.new("Frame", Page_Shop)
+    CatFrame.BackgroundColor3 = Theme.Content
+    CatFrame.Size = UDim2.new(1, -10, 0, 180)
+    CatFrame.BorderSizePixel = 0
+    Instance.new("UICorner", CatFrame).CornerRadius = UDim.new(0, 8)
+    local stroke = Instance.new("UIStroke", CatFrame)
+    stroke.Color = Theme.Border
+    stroke.Thickness = 1
+    
+    local CatLabel = Instance.new("TextLabel", CatFrame)
+    CatLabel.BackgroundTransparency = 1
+    CatLabel.Size = UDim2.new(1, 0, 0, 30)
+    CatLabel.Font = Enum.Font.GothamBold
+    CatLabel.Text = name
+    CatLabel.TextColor3 = Theme.AccentHover
+    CatLabel.TextSize = 16
+    CatLabel.TextXAlignment = Enum.TextXAlignment.Center
+    
+    -- Placeholder (bisa lu isi toggle/auto-buy nanti)
+    local Placeholder = Instance.new("TextLabel", CatFrame)
+    Placeholder.BackgroundTransparency = 1
+    Placeholder.Size = UDim2.new(1, -20, 1, -50)
+    Placeholder.Position = UDim2.new(0, 10, 0, 40)
+    Placeholder.Font = Enum.Font.GothamMedium
+    Placeholder.Text = "Fitur " .. name .. " (Auto Buy / Preview / Toggle)\nComing soon / Customize di sini"
+    Placeholder.TextColor3 = Theme.TextSecondary
+    Placeholder.TextSize = 13
+    Placeholder.TextWrapped = true
+    
+    return CatFrame
+end
+
+-- Buat 4 kategori
+CreateShopCategory("Merchant")
+CreateShopCategory("Charm")
+CreateShopCategory("Bobber")
+CreateShopCategory("Rod")
 -- Segmen 9/12 - CreateTab, Teleport Buttons, Toggle/Input Utility
 -- Tempel di bawah Segmen 8
 
@@ -407,6 +467,7 @@ CreateTab("Admin Boost", Page_AdminBoost)
 CreateTab("List Player", Page_Tag)
 CreateTab("Setting", Page_Setting)
 CreateTab("Save Config", Page_Save)
+CreateTab("Shop", Page_Shop)
 
 -- Fungsi utility toggle & input (sama seperti asli, tapi dengan safety)
 local ToggleRegistry = {}
