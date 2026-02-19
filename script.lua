@@ -2619,6 +2619,38 @@ if promptOverlay then
     end))
 end
 
+    -- Sentot Merchant Shortcut: Tekan M untuk toggle open Merchant
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local net = ReplicatedStorage.Packages._Index["sleitnick_net@0.2.0"].net
+local DialogueEnded = net["RE/DialogueEnded"]
+
+local merchantOpen = false
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.KeyCode == Enum.KeyCode.M then  -- Ganti M kalau mau (misal Enum.KeyCode.N)
+        merchantOpen = not merchantOpen
+        
+        if merchantOpen then
+            DialogueEnded:FireServer("Merchant")  -- Parameter paling work: "Merchant" / "" / "Shop"
+            -- Alternatif kalau ga muncul (coba uncomment satu per satu):
+            -- DialogueEnded:FireServer("")
+            -- DialogueEnded:FireServer("Shop")
+            -- DialogueEnded:FireServer("OpenMerchant")
+            
+            print("[Sentot] Attempt OPEN Merchant via DialogueEnded")
+        else
+            DialogueEnded:FireServer("Close")  -- Attempt close, kalau ga work tutup manual UI
+            print("[Sentot] Attempt CLOSE Merchant")
+        end
+    end
+end)
+
+print("[Sentot] Merchant Shortcut ACTIVE - Tekan M untuk open/close Merchant")
+    
 game:BindToClose(function()
     SendDisconnectWebhook("Script/Game Closed Gracefully")
     task.wait(1)
