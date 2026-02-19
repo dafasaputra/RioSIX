@@ -925,24 +925,27 @@ CreateToggle(Page_Fhising, "Auto Equip Rod", false, function(state)
     end
 end)
 
--- Instant Fishing (Cast + Complete langsung, SKIP CHARGE!)
+-- Instant Fishing dengan delay yang bisa diubah dari UI
 local InstantFishingEnabled = false
+local CastDelay = 0.15   -- default delay setelah equip sebelum cast (detik)
+local CompleteDelay = 0.25  -- default delay setelah cast sebelum complete (detik)
 
+-- Toggle Instant Fishing
 CreateToggle(Page_Fhising, "Instant Fishing (Cast + Complete)", false, function(state)
     InstantFishingEnabled = state
     if state then
         task.spawn(function()
             while InstantFishingEnabled and ScriptActive do
                 pcall(function()
-                    -- Equip rod (backup, kalau Auto Equip mati)
+                    -- 1. Equip rod (backup)
                     local RE_Equip = GetRemote("RE/EquipToolFromHotbar")
                     if RE_Equip then 
-                        RE_Equip:FireServer(1)  -- slot 1 = rod
+                        RE_Equip:FireServer(1)
                     end
                     
-                    task.wait(0.15)  -- delay kecil
+                    task.wait(CastDelay)  -- delay sebelum cast (bisa diubah dari UI)
                     
-                    -- Cast: Request Minigame Started (random direction normalized)
+                    -- 2. Cast: Request Minigame Started
                     local RF_Request = GetRemote("RF/RequestFishingMinigameStarted")
                     if RF_Request then
                         local randomDir = Vector3.new(
@@ -953,9 +956,9 @@ CreateToggle(Page_Fhising, "Instant Fishing (Cast + Complete)", false, function(
                         RF_Request:InvokeServer(randomDir.X, randomDir.Y, randomDir.Z)
                     end
                     
-                    task.wait(0.25)  -- delay server nerima cast
+                    task.wait(CompleteDelay)  -- delay sebelum complete (bisa diubah dari UI)
                     
-                    -- Complete: Catch Fish INSTAN!
+                    -- 3. Complete: Catch Fish INSTAN
                     local RF_Catch = GetRemote("RF/CatchFishCompleted")
                     if RF_Catch then 
                         RF_Catch:InvokeServer()
@@ -963,18 +966,39 @@ CreateToggle(Page_Fhising, "Instant Fishing (Cast + Complete)", false, function(
                     
                     -- Optional: Auto Sell (uncomment kalau mau)
                     -- local RF_Sell = GetRemote("RF/SellAllItems")
-                    -- task.wait(0.3)
-                    -- if RF_Sell then RF_Sell:InvokeServer() end
+                    -- if RF_Sell then task.wait(0.3); RF_Sell:InvokeServer() end
                 end)
                 
-                task.wait(1.7)  -- delay aman antar fishing (hindari rate limit)
+                task.wait(1.7)  -- delay antar satu fishing cycle (bisa diubah kalau mau)
             end
         end)
-        ShowNotification("Instant Fishing ON (No Charge)", false)
+        ShowNotification("Instant Fishing ON (Delay: Cast " .. CastDelay .. "s, Complete " .. CompleteDelay .. "s)", false)
     else
         ShowNotification("Instant Fishing OFF", false)
     end
 end)
+
+-- Input buat ubah Cast Delay
+CreateInput(Page_Fhising, "Cast Delay (detik)", tostring(CastDelay), function(newValue)
+    local num = tonumber(newValue)
+    if num and num >= 0.05 and num <= 2 then  -- batas aman 0.05 - 2 detik
+        CastDelay = num
+        ShowNotification("Cast Delay diubah jadi " .. num .. " detik", false)
+    else
+        ShowNotification("Masukkan angka 0.05 - 2 detik!", true)
+    end
+end, 36)  -- height 36 biar rapi
+
+-- Input buat ubah Complete Delay
+CreateInput(Page_Fhising, "Complete Delay (detik)", tostring(CompleteDelay), function(newValue)
+    local num = tonumber(newValue)
+    if num and num >= 0.1 and num <= 2 then  -- batas aman 0.1 - 2 detik
+        CompleteDelay = num
+        ShowNotification("Complete Delay diubah jadi " .. num .. " detik", false)
+    else
+        ShowNotification("Masukkan angka 0.1 - 2 detik!", true)
+    end
+end, 36)
 
 local DetectorStuckEnabled = false
 local StuckThreshold = 15
