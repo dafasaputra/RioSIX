@@ -926,79 +926,69 @@ CreateToggle(Page_Fhising, "Auto Equip Rod", false, function(state)
 end)
 
 -- Instant Fishing dengan delay yang bisa diubah dari UI
-local InstantFishingEnabled = false
-local CastDelay = 0.15   -- default delay setelah equip sebelum cast (detik)
-local CompleteDelay = 0.25  -- default delay setelah cast sebelum complete (detik)
+local IF={Remotes={Charge=nil,Request=nil,Cancel=nil,Claim=nil},Initialized=false,Enabled=false}
 
--- Toggle Instant Fishing
-CreateToggle(Page_Fhising, "Instant Fishing (Cast + Complete)", false, function(state)
-    InstantFishingEnabled = state
-    if state then
-        task.spawn(function()
-            while InstantFishingEnabled and ScriptActive do
-                pcall(function()
-                    -- 1. Equip rod (backup)
-                    local RE_Equip = GetRemote("RE/EquipToolFromHotbar")
-                    if RE_Equip then 
-                        RE_Equip:FireServer(1)
-                    end
-                    
-                    task.wait(CastDelay)  -- delay sebelum cast (bisa diubah dari UI)
-                    
-                    -- 2. Cast: Request Minigame Started
-                    local RF_Request = GetRemote("RF/RequestFishingMinigameStarted")
-                    if RF_Request then
-                        local randomDir = Vector3.new(
-                            math.random(-100,100)/100,
-                            0,
-                            math.random(-100,100)/100
-                        ).Unit
-                        RF_Request:InvokeServer(randomDir.X, randomDir.Y, randomDir.Z)
-                    end
-                    
-                    task.wait(CompleteDelay)  -- delay sebelum complete (bisa diubah dari UI)
-                    
-                    -- 3. Complete: Catch Fish INSTAN
-                    local RF_Catch = GetRemote("RF/CatchFishCompleted")
-                    if RF_Catch then 
-                        RF_Catch:InvokeServer()
-                    end
-                    
-                    -- Optional: Auto Sell (uncomment kalau mau)
-                    -- local RF_Sell = GetRemote("RF/SellAllItems")
-                    -- if RF_Sell then task.wait(0.3); RF_Sell:InvokeServer() end
-                end)
-                
-                task.wait(1.7)  -- delay antar satu fishing cycle (bisa diubah kalau mau)
-            end
-        end)
-        ShowNotification("Instant Fishing ON (Delay: Cast " .. CastDelay .. "s, Complete " .. CompleteDelay .. "s)", false)
-    else
-        ShowNotification("Instant Fishing OFF", false)
+local function IF_Init()
+    if IF.Initialized then return true end
+    local s,r=pcall(function()
+        local np=ReplicatedStorage:WaitForChild("Packages",5):WaitForChild("_Index",5):WaitForChild("sleitnick_net@0.2.0",5):WaitForChild("net",5)
+        if np then
+            IF.Remotes.Charge=np:WaitForChild("RF/ChargeFishingRod",3)
+            IF.Remotes.Request=np:WaitForChild("RF/RequestFishingMinigameStarted",3)
+            IF.Remotes.Cancel=np:WaitForChild("RF/CancelFishingInputs",3)
+            IF.Remotes.Claim=np:WaitForChild("RF/CatchFishCompleted",3)
+            IF.Initialized=IF.Remotes.Charge and IF.Remotes.Request and IF.Remotes.Cancel and IF.Remotes.Claim
+            return IF.Initialized
+        end
+        return false
+    end)
+    return s and r
+end
+
+local function IF_FishingLoop()
+    while IF.Enabled and ScriptActive do
+        -- Cancel
+        pcall(function() IF.Remotes.Cancel:InvokeServer() end)
+        -- Charge
+        pcall(function() IF.Remotes.Charge:InvokeServer() end)
+        -- Request
+        pcall(function() IF.Remotes.Request:InvokeServer(-1.233184814453125,0.0017426679483021346,tick()) end)
+        -- Wait
+        task.wait(Settings.InstantFishingCompleteDelay or 0.7)
+        -- Claim Parallel
+        for i=1,(Settings.InstantFishingClaimAmount or 3) do
+            task.spawn(function() pcall(function() IF.Remotes.Claim:InvokeServer() end) end)
+        end
+        -- Cast Delay
+        task.wait(Settings.InstantFishingCastDelay or 0.1)
+    end
+end
+
+function IF_Start()
+    if not IF_Init() then
+        ShowNotification("Fishing Remotes Missing!",true)
+        Settings.InstantFishingEnabled=false
+        return
+    end
+    IF.Enabled=true
+    -- Start fishing loop
+    task.spawn(IF_FishingLoop)
+end
+
+function IF_Stop()
+    IF.Enabled=false
+end
+
+-- Monitor Toggle
+task.spawn(function()
+    while ScriptActive do
+        if Settings.InstantFishingEnabled and not IF.Enabled then
+            IF_Start()
+            repeat task.wait(0.1) until not Settings.InstantFishingEnabled or not ScriptActive
+        end
+        task.wait(0.1)
     end
 end)
-
--- Input buat ubah Cast Delay
-CreateInput(Page_Fhising, "Cast Delay (detik)", tostring(CastDelay), function(newValue)
-    local num = tonumber(newValue)
-    if num and num >= 0.05 and num <= 2 then  -- batas aman 0.05 - 2 detik
-        CastDelay = num
-        ShowNotification("Cast Delay diubah jadi " .. num .. " detik", false)
-    else
-        ShowNotification("Masukkan angka 0.05 - 2 detik!", true)
-    end
-end, 36)  -- height 36 biar rapi
-
--- Input buat ubah Complete Delay
-CreateInput(Page_Fhising, "Complete Delay (detik)", tostring(CompleteDelay), function(newValue)
-    local num = tonumber(newValue)
-    if num and num >= 0.1 and num <= 2 then  -- batas aman 0.1 - 2 detik
-        CompleteDelay = num
-        ShowNotification("Complete Delay diubah jadi " .. num .. " detik", false)
-    else
-        ShowNotification("Masukkan angka 0.1 - 2 detik!", true)
-    end
-end, 36)
 
 local DetectorStuckEnabled = false
 local StuckThreshold = 15
