@@ -2637,9 +2637,9 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if merchantOpen then
             DialogueEnded:FireServer("Merchant")  -- Parameter paling work: "Merchant" / "" / "Shop"
             -- Alternatif kalau ga muncul (coba uncomment satu per satu):
-            -- DialogueEnded:FireServer("")
-            -- DialogueEnded:FireServer("Shop")
-            -- DialogueEnded:FireServer("OpenMerchant")
+            DialogueEnded:FireServer("")
+            DialogueEnded:FireServer("Shop")
+            DialogueEnded:FireServer("OpenMerchant")
             
             print("[Sentot] Attempt OPEN Merchant via DialogueEnded")
         else
