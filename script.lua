@@ -916,12 +916,63 @@ CreateToggle(Page_Fhising, "Auto Equip Rod", false, function(state)
                         ShowNotification("Remote Equip Not Found!", true)
                     end
                 end)
-                task.wait(4)  -- equip ulang setiap 4 detik (aman, ga spam server)
+                task.wait(2)  -- equip ulang setiap 4 detik (aman, ga spam server)
             end
         end)
         ShowNotification("Auto Equip Rod ON", false)
     else
         ShowNotification("Auto Equip Rod OFF", false)
+    end
+end)
+
+-- Instant Fishing (Cast + Complete langsung, SKIP CHARGE!)
+local InstantFishingEnabled = false
+
+CreateToggle(Page_Fhising, "Instant Fishing (Cast + Complete)", false, function(state)
+    InstantFishingEnabled = state
+    if state then
+        task.spawn(function()
+            while InstantFishingEnabled and ScriptActive do
+                pcall(function()
+                    -- Equip rod (backup, kalau Auto Equip mati)
+                    local RE_Equip = GetRemote("RE/EquipToolFromHotbar")
+                    if RE_Equip then 
+                        RE_Equip:FireServer(1)  -- slot 1 = rod
+                    end
+                    
+                    task.wait(0.15)  -- delay kecil
+                    
+                    -- Cast: Request Minigame Started (random direction normalized)
+                    local RF_Request = GetRemote("RF/RequestFishingMinigameStarted")
+                    if RF_Request then
+                        local randomDir = Vector3.new(
+                            math.random(-100,100)/100,
+                            0,
+                            math.random(-100,100)/100
+                        ).Unit
+                        RF_Request:InvokeServer(randomDir.X, randomDir.Y, randomDir.Z)
+                    end
+                    
+                    task.wait(0.25)  -- delay server nerima cast
+                    
+                    -- Complete: Catch Fish INSTAN!
+                    local RF_Catch = GetRemote("RF/CatchFishCompleted")
+                    if RF_Catch then 
+                        RF_Catch:InvokeServer()
+                    end
+                    
+                    -- Optional: Auto Sell (uncomment kalau mau)
+                    -- local RF_Sell = GetRemote("RF/SellAllItems")
+                    -- task.wait(0.3)
+                    -- if RF_Sell then RF_Sell:InvokeServer() end
+                end)
+                
+                task.wait(1.7)  -- delay aman antar fishing (hindari rate limit)
+            end
+        end)
+        ShowNotification("Instant Fishing ON (No Charge)", false)
+    else
+        ShowNotification("Instant Fishing OFF", false)
     end
 end)
 
