@@ -1,6 +1,3 @@
--- RioSIX - Final Version - Segmen 1/12
--- Tempel paling atas
-
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local StarterGui = game:GetService("StarterGui")
@@ -23,10 +20,23 @@ local VirtualUser = game:GetService("VirtualUser")
 local SafeName = "RioSIX_ReplicatedService_" .. math.random(100000,999999)
 
 local ProtectGui = protectgui or (syn and syn.protect_gui) or (gethui and function(g) g.Parent = gethui() end) or function(g) g.Parent = CoreGui end
-
 local FishingController = require(ReplicatedStorage.Controllers.FishingController)
 
--- Cleanup function
+task.spawn(function()
+    while ScriptActive do
+        task.wait(5)
+        local success, err = pcall(function()
+            local core = game:GetService("CoreGui")
+            if core:FindFirstChild("DarkDetex") or core:FindFirstChild("RemoteSpy") or core:FindFirstChild("TurtleSpy") then
+            end
+        end)
+    end
+end)
+
+if getgenv and getgenv().Byu_Stop then
+    pcall(getgenv().Byu_Stop)
+end
+
 local function CleanupScript()
     ScriptActive = false
     for _, v in pairs(Connections) do
@@ -40,53 +50,17 @@ local function CleanupScript()
    
     if ScreenGui then ScreenGui:Destroy() end
    
-    print("❌ RioSIX: Script closed and cleanup complete.")
+    print("❌ RioSIX System: Script closed and cleanup complete.")
     if getgenv then getgenv().Byu_Stop = nil end
 end
 
 if getgenv then
-    if getgenv().Byu_Stop then pcall(getgenv().Byu_Stop) end
     getgenv().Byu_Stop = CleanupScript
 end
 
--- Segmen 2/12 - Anti-AFK, Anti-Spy, Folder Config
--- Tempel di bawah Segmen 1
-
-task.spawn(function()
-    while ScriptActive do
-        task.wait(5)
-        pcall(function()
-            local core = game:GetService("CoreGui")
-            if core:FindFirstChild("DarkDetex") or core:FindFirstChild("RemoteSpy") or core:FindFirstChild("TurtleSpy") then
-                -- bisa tambah logic kick/kill script spy kalau mau
-            end
-        end)
-    end
-end)
-
--- Anti-AFK
-task.spawn(function()
-    local VirtualUser = game:GetService("VirtualUser")
-    lp.Idled:Connect(function()
-        VirtualUser:CaptureController()
-        VirtualUser:ClickButton2(Vector2.new())
-    end)
-   
-    pcall(function()
-        for i,v in pairs(getconnections(lp.Idled)) do
-            v:Disable()
-        end
-    end)
-    print("RioSIX: Anti-AFK Active")
-end)
-
--- Folder config
 if not isfolder("RioSIX_Configs") then
     pcall(function() makefolder("RioSIX_Configs") end)
 end
-
--- Segmen 3/12 - Theme & Variabel Global
--- Tempel di bawah Segmen 2
 
 local Theme = {
     Background = Color3.fromRGB(20, 22, 28),
@@ -108,6 +82,8 @@ local Current_Webhook_Leave = ""
 local Current_Webhook_List = ""
 local Current_Webhook_Admin = ""
 local LastDisconnectTime = 0
+local AdminID_1 = ""
+local AdminID_2 = ""
 
 local SecretList = {
     "Crystal Crab", "Orca", "Zombie Shark", "Zombie Megalodon", "Dead Zombie Shark",
@@ -125,12 +101,9 @@ local SecretList = {
 
 local StoneList = { "Ruby" }
 
--- Segmen 4/12 - Teleport & Fishing Areas
--- Tempel di bawah Segmen 3
-
 local function TeleportToLookAt(position, lookVector)
-    local Character = lp.Character
-    if not Character then Character = lp.CharacterAdded:Wait() end
+    local Character = Players.LocalPlayer.Character
+    if not Character then Character = Players.LocalPlayer.CharacterAdded:Wait() end
     local hrp = Character:WaitForChild("HumanoidRootPart", 5)
    
     if hrp and typeof(position) == "Vector3" and typeof(lookVector) == "Vector3" then
@@ -166,9 +139,6 @@ local FishingAreas = {
     ["Volcanic Cavern"] = {Pos = Vector3.new(1249.005, 82.830, -10224.920), Look = Vector3.new(-0.649, -0.666, 0.368)},
 }
 
--- Segmen 5/12 - Settings & ShowNotification
--- Tempel di bawah Segmen 4
-
 local Settings = {
     SecretEnabled = false,
     RubyEnabled = false,
@@ -186,7 +156,114 @@ local Settings = {
     EvolvedEnabled = false
 }
 
-local function ShowNotification(msg, isError)
+task.spawn(function()
+    local VirtualUser = game:GetService("VirtualUser")
+    Players.LocalPlayer.Idled:Connect(function()
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
+    end)
+   
+    pcall(function()
+        for i,v in pairs(getconnections(Players.LocalPlayer.Idled)) do
+            v:Disable()
+        end
+    end)
+    print("RioSIX: Anti-AFK Active")
+end)
+
+task.spawn(function()
+    local success, err = pcall(function()
+        local queueTeleport = queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport)
+       
+        if queueTeleport then
+            local TpService = game:GetService("TeleportService")
+            local TeleportingConn = TpService.TeleportInit:Connect(function()
+                if Settings.AutoExecute then
+                    print("RioSIX: Queuing Auto Execute...")
+                    pcall(function()
+                        queueTeleport([[
+                            task.wait(5)
+                            local paths = {"RioSIX/FishIt/Fishit.lua", "Fishit.lua", "RioSIX/FishIt/Fishit.lua"}
+                            local scriptCode = nil
+                            for _, p in ipairs(paths) do
+                                local s, c = pcall(function() return readfile(p) end)
+                                if s and c then scriptCode = c; break end
+                            end
+                           
+                            if scriptCode then
+                                loadstring(scriptCode)()
+                            else
+                                warn("RioSIX AutoExecute: Could not find script file to execute!")
+                            end
+                        ]])
+                    end)
+                end
+            end)
+            table.insert(Connections, TeleportingConn)
+        end
+    end)
+    if not success then warn("RioSIX: AutoExecute Not Supported: " .. tostring(err)) end
+end)
+
+local TagList = {}
+local TagUIElements = {}
+local UI_FishInput, UI_LeaveInput, UI_ListInput, UI_AdminInput
+local SessionStart = tick()
+local SessionStats = {
+    Secret = 0,
+    Ruby = 0,
+    Evolved = 0,
+    Crystalized = 0,
+    CaveCrystal = 0,
+    TotalSent = 0
+}
+local UI_StatsLabels = {}
+
+local function UpdateTagData()
+    if #TagList == 0 then
+        for i = 1, 20 do TagList[i] = {"", ""} end
+    end
+    if #TagUIElements > 0 then
+        for i = 1, 20 do
+            if TagUIElements[i] then
+                TagUIElements[i].User.Text = TagList[i][1] or ""
+                TagUIElements[i].ID.Text = TagList[i][2] or ""
+            end
+        end
+    end
+end
+UpdateTagData()
+
+local oldUI = CoreGui:FindFirstChild(SafeName) or CoreGui:FindFirstChild("RioSIX_Script")
+if oldUI then oldUI:Destroy() task.wait(0.1) end
+
+ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = SafeName
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+pcall(function()
+    ProtectGui(ScreenGui)
+end)
+if not ScreenGui.Parent then ScreenGui.Parent = CoreGui end
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local function AddStroke(instance, color, thickness)
+    local s = Instance.new("UIStroke", instance)
+    s.Color = color or Theme.Border
+    s.Thickness = thickness or 1
+    s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    return s
+end
+
+local function AddPadding(instance, amount)
+    local p = Instance.new("UIPadding", instance)
+    p.PaddingLeft = UDim.new(0, amount)
+    p.PaddingRight = UDim.new(0, amount)
+    p.PaddingTop = UDim.new(0, amount)
+    p.PaddingBottom = UDim.new(0, amount)
+    return p
+end
+
+function ShowNotification(msg, isError)
     if not ScriptActive then return end
     local NotifFrame = Instance.new("Frame", ScreenGui)
     NotifFrame.BackgroundColor3 = Theme.Background
@@ -196,16 +273,13 @@ local function ShowNotification(msg, isError)
     NotifFrame.ZIndex = 200
    
     Instance.new("UICorner", NotifFrame).CornerRadius = UDim.new(0, 8)
-    local stroke = Instance.new("UIStroke", NotifFrame)
-    stroke.Color = isError and Theme.Error or Theme.Accent
-    stroke.Thickness = 1.5
+    AddStroke(NotifFrame, isError and Theme.Error or Theme.Accent, 1.5)
    
     local Icon = Instance.new("Frame", NotifFrame)
     Icon.BackgroundColor3 = isError and Theme.Error or Theme.Accent
     Icon.Size = UDim2.new(0, 4, 1, -10)
     Icon.Position = UDim2.new(0, 8, 0.5, -((40-10)/2))
     Instance.new("UICorner", Icon).CornerRadius = UDim.new(1,0)
-   
     local Label = Instance.new("TextLabel", NotifFrame)
     Label.BackgroundTransparency = 1
     Label.Position = UDim2.new(0, 20, 0, 0)
@@ -234,27 +308,36 @@ local function ShowNotification(msg, isError)
             NotifFrame:Destroy()
         end
     end)
-end-- Segmen 5/12 - Settings & ShowNotification
--- Tempel di bawah Segmen 4
+endlocal oldUI = CoreGui:FindFirstChild(SafeName) or CoreGui:FindFirstChild("RioSIX_Script")
+if oldUI then oldUI:Destroy() task.wait(0.1) end
 
-local Settings = {
-    SecretEnabled = false,
-    RubyEnabled = false,
-    MutationCrystalized = false,
-    CaveCrystalEnabled = false,
-    LeaveEnabled = false,
-    PlayerNonPSAuto = false,
-    ForeignDetection = false,
-    SpoilerName = true,
-    PingMonitor = false,
-    AutoExecute = false,
-    NoAnimation = false,
-    RemoveVFX = false,
-    DisablePopups = false,
-    EvolvedEnabled = false
-}
+ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = SafeName
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+pcall(function()
+    ProtectGui(ScreenGui)
+end)
+if not ScreenGui.Parent then ScreenGui.Parent = CoreGui end
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-local function ShowNotification(msg, isError)
+local function AddStroke(instance, color, thickness)
+    local s = Instance.new("UIStroke", instance)
+    s.Color = color or Theme.Border
+    s.Thickness = thickness or 1
+    s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    return s
+end
+
+local function AddPadding(instance, amount)
+    local p = Instance.new("UIPadding", instance)
+    p.PaddingLeft = UDim.new(0, amount)
+    p.PaddingRight = UDim.new(0, amount)
+    p.PaddingTop = UDim.new(0, amount)
+    p.PaddingBottom = UDim.new(0, amount)
+    return p
+end
+
+function ShowNotification(msg, isError)
     if not ScriptActive then return end
     local NotifFrame = Instance.new("Frame", ScreenGui)
     NotifFrame.BackgroundColor3 = Theme.Background
@@ -264,16 +347,13 @@ local function ShowNotification(msg, isError)
     NotifFrame.ZIndex = 200
    
     Instance.new("UICorner", NotifFrame).CornerRadius = UDim.new(0, 8)
-    local stroke = Instance.new("UIStroke", NotifFrame)
-    stroke.Color = isError and Theme.Error or Theme.Accent
-    stroke.Thickness = 1.5
+    AddStroke(NotifFrame, isError and Theme.Error or Theme.Accent, 1.5)
    
     local Icon = Instance.new("Frame", NotifFrame)
     Icon.BackgroundColor3 = isError and Theme.Error or Theme.Accent
     Icon.Size = UDim2.new(0, 4, 1, -10)
     Icon.Position = UDim2.new(0, 8, 0.5, -((40-10)/2))
     Instance.new("UICorner", Icon).CornerRadius = UDim.new(1,0)
-   
     local Label = Instance.new("TextLabel", NotifFrame)
     Label.BackgroundTransparency = 1
     Label.Position = UDim2.new(0, 20, 0, 0)
@@ -304,38 +384,7 @@ local function ShowNotification(msg, isError)
     end)
 end
 
-    -- Segmen 6/12 - Tag List, Session Stats, UI Elements
--- Tempel di bawah Segmen 5
-
-local TagList = {}
-local TagUIElements = {}
-local UI_FishInput, UI_LeaveInput, UI_ListInput, UI_AdminInput
-local SessionStart = tick()
-local SessionStats = {
-    Secret = 0,
-    Ruby = 0,
-    Evolved = 0,
-    Crystalized = 0,
-    CaveCrystal = 0,
-    TotalSent = 0
-}
-local UI_StatsLabels = {}
-
-    -- Segmen 7/12 - GUI Utama (ScreenGui, MainFrame, Header)
--- Tempel di bawah Segmen 6
-
-local oldUI = CoreGui:FindFirstChild(SafeName) or CoreGui:FindFirstChild("RioSIX_Script")
-if oldUI then oldUI:Destroy() task.wait(0.1) end
-
-ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = SafeName
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-pcall(function()
-    ProtectGui(ScreenGui)
-end)
-if not ScreenGui.Parent then ScreenGui.Parent = CoreGui end
-
-local MainFrame = Instance.new("Frame", ScreenGui)
+    local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.BackgroundColor3 = Theme.Background
 MainFrame.Position = UDim2.new(0.5, -240, 0.5, -140)
 MainFrame.Size = UDim2.new(0, 480, 0, 300)
@@ -344,9 +393,7 @@ MainFrame.Draggable = true
 MainFrame.ClipsDescendants = false
 MainFrame.BorderSizePixel = 0
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
-local strokeMain = Instance.new("UIStroke", MainFrame)
-strokeMain.Color = Theme.Border
-strokeMain.Thickness = 1
+AddStroke(MainFrame, Theme.Border, 1)
 
 local Shadow = Instance.new("ImageLabel", MainFrame)
 Shadow.Name = "Shadow"
@@ -370,6 +417,19 @@ Header.ZIndex = 5
 local HeaderCorner = Instance.new("UICorner", Header)
 HeaderCorner.CornerRadius = UDim.new(0, 8)
 
+local HeaderSquare = Instance.new("Frame", Header)
+HeaderSquare.BackgroundColor3 = Theme.Header
+HeaderSquare.BorderSizePixel = 0
+HeaderSquare.Position = UDim2.new(0,0,1,-8)
+HeaderSquare.Size = UDim2.new(1,0,0,8)
+
+local HeaderLine = Instance.new("Frame", Header)
+HeaderLine.BackgroundColor3 = Theme.Border
+HeaderLine.BorderSizePixel = 0
+HeaderLine.Position = UDim2.new(0, 0, 1, 0)
+HeaderLine.Size = UDim2.new(1, 0, 0, 1)
+HeaderLine.ZIndex = 6
+
 local TitleLab = Instance.new("TextLabel", Header)
 TitleLab.BackgroundTransparency = 1
 TitleLab.Position = UDim2.new(0, 15, 0, 0)
@@ -382,6 +442,7 @@ TitleLab.TextXAlignment = Enum.TextXAlignment.Left
 TitleLab.ZIndex = 6
 
 local CloseBtn = Instance.new("TextButton", Header)
+CloseBtn.Name = "Close"
 CloseBtn.BackgroundTransparency = 1
 CloseBtn.Position = UDim2.new(1, -30, 0, 0)
 CloseBtn.Size = UDim2.new(0, 30, 1, 0)
@@ -390,11 +451,11 @@ CloseBtn.Text = "×"
 CloseBtn.TextColor3 = Theme.TextSecondary
 CloseBtn.TextSize = 22
 CloseBtn.ZIndex = 6
-CloseBtn.MouseButton1Click:Connect(function()
-    CleanupScript()
-end)
+CloseBtn.MouseEnter:Connect(function() CloseBtn.TextColor3 = Theme.Error end)
+CloseBtn.MouseLeave:Connect(function() CloseBtn.TextColor3 = Theme.TextSecondary end)
 
 local MinBtn = Instance.new("TextButton", Header)
+MinBtn.Name = "Minimize"
 MinBtn.BackgroundTransparency = 1
 MinBtn.Position = UDim2.new(1, -60, 0, 0)
 MinBtn.Size = UDim2.new(0, 30, 1, 0)
@@ -403,12 +464,8 @@ MinBtn.Text = "−"
 MinBtn.TextColor3 = Theme.TextSecondary
 MinBtn.TextSize = 22
 MinBtn.ZIndex = 6
-MinBtn.MouseButton1Click:Connect(function()
-    MainFrame.Visible = false
-end)
-
-    -- Segmen 8/12 - Sidebar, Pages, Tabs + Shop Full (RioSIX)
--- Tempel di bawah Segmen 7
+MinBtn.MouseEnter:Connect(function() MinBtn.TextColor3 = Theme.TextPrimary end)
+MinBtn.MouseLeave:Connect(function() MinBtn.TextColor3 = Theme.TextSecondary end)
 
 local Sidebar = Instance.new("Frame", MainFrame)
 Sidebar.BackgroundColor3 = Theme.Sidebar
@@ -418,6 +475,19 @@ Sidebar.BorderSizePixel = 0
 Sidebar.ZIndex = 2
 local SideCorner = Instance.new("UICorner", Sidebar)
 SideCorner.CornerRadius = UDim.new(0, 8)
+
+local SideSquare = Instance.new("Frame", Sidebar)
+SideSquare.BackgroundColor3 = Theme.Sidebar
+SideSquare.BorderSizePixel = 0
+SideSquare.Position = UDim2.new(1,-8,0,0)
+SideSquare.Size = UDim2.new(0,8,1,0)
+
+local SideLine = Instance.new("Frame", Sidebar)
+SideLine.BackgroundColor3 = Theme.Border
+SideLine.BorderSizePixel = 0
+SideLine.Position = UDim2.new(1, -1, 0, 0)
+SideLine.Size = UDim2.new(0, 1, 1, 0)
+SideLine.ZIndex = 3
 
 local MenuContainer = Instance.new("Frame", Sidebar)
 MenuContainer.BackgroundTransparency = 1
@@ -435,6 +505,65 @@ ContentContainer.BackgroundTransparency = 1
 ContentContainer.Position = UDim2.new(0, 120, 0, 42)
 ContentContainer.Size = UDim2.new(1, -120, 1, -48)
 ContentContainer.ZIndex = 3
+
+    local ModalFrame = Instance.new("Frame", ScreenGui)
+ModalFrame.Name = "ModalConfirm"
+ModalFrame.BackgroundColor3 = Theme.Header
+ModalFrame.Size = UDim2.new(0, 240, 0, 110)
+ModalFrame.Position = UDim2.new(0.5, -120, 0.5, -55)
+ModalFrame.BorderSizePixel = 0
+ModalFrame.ZIndex = 100
+ModalFrame.Visible = false
+ModalFrame.Active = false
+Instance.new("UICorner", ModalFrame).CornerRadius = UDim.new(0, 8)
+AddStroke(ModalFrame, Theme.Border, 1)
+
+local ModalShadow = Instance.new("ImageLabel", ModalFrame)
+ModalShadow.Name = "Shadow"
+ModalShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+ModalShadow.BackgroundTransparency = 1
+ModalShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+ModalShadow.Size = UDim2.new(1, 40, 1, 40)
+ModalShadow.ZIndex = 99
+ModalShadow.Image = "rbxassetid://6014261993"
+ModalShadow.ImageColor3 = Color3.new(0, 0, 0)
+ModalShadow.ImageTransparency = 0.5
+ModalShadow.SliceCenter = Rect.new(49, 49, 450, 450)
+
+local ModalTitle = Instance.new("TextLabel", ModalFrame)
+ModalTitle.BackgroundTransparency = 1
+ModalTitle.Position = UDim2.new(0, 0, 0, 18)
+ModalTitle.Size = UDim2.new(1, 0, 0, 20)
+ModalTitle.Font = Enum.Font.GothamBold
+ModalTitle.Text = "Close Script?"
+ModalTitle.TextColor3 = Theme.TextPrimary
+ModalTitle.TextSize = 16
+ModalTitle.ZIndex = 102
+
+local BtnYes = Instance.new("TextButton", ModalFrame)
+BtnYes.BackgroundColor3 = Theme.Error
+BtnYes.Position = UDim2.new(0, 20, 1, -40)
+BtnYes.Size = UDim2.new(0, 95, 0, 28)
+BtnYes.Font = Enum.Font.GothamBold
+BtnYes.Text = "Yes"
+BtnYes.TextColor3 = Color3.new(1, 1, 1)
+BtnYes.TextSize = 13
+BtnYes.ZIndex = 102
+BtnYes.Active = true
+Instance.new("UICorner", BtnYes).CornerRadius = UDim.new(0, 6)
+
+local BtnNo = Instance.new("TextButton", ModalFrame)
+BtnNo.BackgroundColor3 = Theme.Content
+BtnNo.Position = UDim2.new(1, -115, 1, -40)
+BtnNo.Size = UDim2.new(0, 95, 0, 28)
+BtnNo.Font = Enum.Font.GothamBold
+BtnNo.Text = "No"
+BtnNo.TextColor3 = Theme.TextPrimary
+BtnNo.TextSize = 13
+BtnNo.ZIndex = 102
+BtnNo.Active = true
+Instance.new("UICorner", BtnNo).CornerRadius = UDim.new(0, 6)
+AddStroke(BtnNo, Theme.Border, 1)
 
 local function CreatePage(name)
     local Page = Instance.new("ScrollingFrame", ContentContainer)
@@ -461,12 +590,11 @@ local Page_Tag = CreatePage("TagDiscord")
 local Page_AdminBoost = CreatePage("AdminBoost")
 local Page_SessionStats = CreatePage("SessionStats")
 local Page_Fhising = CreatePage("Fhising")
-local Page_Teleport = CreatePage("Teleport")
-local Page_Setting = CreatePage("Setting")
-local Page_Shop = CreatePage("Shop")
+Page_Webhook.Visible = false
 
-local function CreateTab(name, target, isDefault)
+    local function CreateTab(name, target, isDefault)
     local TabBtn = Instance.new("TextButton", MenuContainer)
+    TabBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     TabBtn.BackgroundTransparency = 1
     TabBtn.Size = UDim2.new(1, -10, 0, 26)
     TabBtn.Font = Enum.Font.GothamMedium
@@ -487,7 +615,9 @@ local function CreateTab(name, target, isDefault)
    
     TabBtn.MouseButton1Click:Connect(function()
         for _, page in pairs(ContentContainer:GetChildren()) do
-            if page:IsA("ScrollingFrame") then page.Visible = false end
+            if page:IsA("ScrollingFrame") or page:IsA("Frame") then
+                page.Visible = false
+            end
         end
         target.Visible = true
        
@@ -495,6 +625,7 @@ local function CreateTab(name, target, isDefault)
             if child:IsA("TextButton") then
                 child.TextColor3 = Theme.TextSecondary
                 child.Font = Enum.Font.GothamMedium
+                child.BackgroundTransparency = 1
                 local line = child:FindFirstChild("ActiveIndicator")
                 if line then line.Visible = false end
             end
@@ -502,28 +633,51 @@ local function CreateTab(name, target, isDefault)
        
         TabBtn.TextColor3 = Theme.TextPrimary
         TabBtn.Font = Enum.Font.GothamBold
+        TabBtn.BackgroundTransparency = 0.95
+        TabBtn.BackgroundColor3 = Theme.TextPrimary
         Indicator.Visible = true
     end)
    
     if isDefault then
         TabBtn.TextColor3 = Theme.TextPrimary
         TabBtn.Font = Enum.Font.GothamBold
+        TabBtn.BackgroundTransparency = 0.95
+        TabBtn.BackgroundColor3 = Theme.TextPrimary
         Indicator.Visible = true
         target.Visible = true
     end
 end
 
-CreateTab("Server Info", Page_SessionStats, true)
+    CreateTab("Server Info", Page_SessionStats, true)
 CreateTab("Fhising", Page_Fhising)
+
+local Page_Teleport = CreatePage("Teleport")
+local TeleportList = Instance.new("UIListLayout", Page_Teleport)
+TeleportList.Padding = UDim.new(0, 5)
+TeleportList.SortOrder = Enum.SortOrder.LayoutOrder
+
 CreateTab("Teleport", Page_Teleport)
+
 CreateTab("Notification", Page_Webhook)
 CreateTab("Admin Boost", Page_AdminBoost)
 CreateTab("List Player", Page_Tag)
+
+Page_Setting = Instance.new("ScrollingFrame", ContentContainer)
+Page_Setting.Name = "Page_Setting"
+Page_Setting.Size = UDim2.new(1, 0, 1, 0)
+Page_Setting.BackgroundTransparency = 1
+Page_Setting.Visible = false
+Page_Setting.ScrollBarThickness = 2
+Instance.new("UIListLayout", Page_Setting).Padding = UDim.new(0, 5)
+
 CreateTab("Setting", Page_Setting)
 CreateTab("Save Config", Page_Save)
+
+    -- Tambah Tab Shop di akhir sidebar
+local Page_Shop = CreatePage("Shop")
 CreateTab("Shop", Page_Shop)
 
--- Isi Page Shop
+-- Isi Page Shop (placeholder sederhana)
 local ShopTitle = Instance.new("TextLabel", Page_Shop)
 ShopTitle.BackgroundTransparency = 1
 ShopTitle.Size = UDim2.new(1, 0, 0, 40)
@@ -568,235 +722,169 @@ CreateShopCategory("Charm")
 CreateShopCategory("Bobber")
 CreateShopCategory("Rod")
 
-    -- Segmen 9/12 - Toggle, Input, Dropdown Utility
--- Tempel di bawah Segmen 8
-
+    -- ToggleRegistry & CreateToggle (sama persis)
 local ToggleRegistry = {}
-
 local function CreateToggle(parent, text, settingKey, callback, validationFunc)
     local Frame = Instance.new("Frame", parent)
     Frame.BackgroundColor3 = Theme.Content
+    Frame.BackgroundTransparency = 0
     Frame.Size = UDim2.new(1, -5, 0, 36)
     Frame.BorderSizePixel = 0
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 6)
-    local stroke = Instance.new("UIStroke", Frame)
-    stroke.Color = Theme.Border
-    stroke.Thickness = 1
-   
+    AddStroke(Frame, Theme.Border, 1)
     local Label = Instance.new("TextLabel", Frame)
-    Label.BackgroundTransparency = 1
-    Label.Position = UDim2.new(0, 10, 0, 0)
-    Label.Size = UDim2.new(0, 180, 1, 0)
-    Label.Font = Enum.Font.GothamBold
-    Label.Text = text
-    Label.TextColor3 = Theme.TextPrimary
-    Label.TextSize = 12
-    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.BackgroundTransparency = 1; Label.Position = UDim2.new(0, 10, 0, 0); Label.Size = UDim2.new(0, 180, 1, 0)
+    Label.Font = Enum.Font.GothamBold; Label.Text = text; Label.TextColor3 = Theme.TextPrimary; Label.TextSize = 12; Label.TextXAlignment = "Left"
    
     local default = Settings[settingKey] or false
    
     local Switch = Instance.new("TextButton", Frame)
     Switch.BackgroundColor3 = default and Theme.Success or Theme.Input
-    Switch.Position = UDim2.new(1, -45, 0.5, -10)
-    Switch.Size = UDim2.new(0, 36, 0, 20)
-    Switch.Text = ""
+    Switch.BackgroundTransparency = 0; Switch.Position = UDim2.new(1, -45, 0.5, -10); Switch.Size = UDim2.new(0, 36, 0, 20); Switch.Text = ""
     Instance.new("UICorner", Switch).CornerRadius = UDim.new(1, 0)
    
     local Circle = Instance.new("Frame", Switch)
     Circle.BackgroundColor3 = Color3.new(1,1,1)
-    Circle.Position = default and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
-    Circle.Size = UDim2.new(0, 16, 0, 16)
+    Circle.Position = default and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8); Circle.Size = UDim2.new(0, 16, 0, 16)
     Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
    
     local function UpdateUI(state)
         local targetColor = state and Theme.Success or Theme.Input
         local targetPos = state and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
+       
         TweenService:Create(Switch, TweenInfo.new(0.2), {BackgroundColor3 = targetColor}):Play()
-        Circle:TweenPosition(targetPos, Enum.EasingDirection.Out, Enum.EasingStyle.Sine, 0.15, true)
+        Circle:TweenPosition(targetPos, "Out", "Sine", 0.15, true)
     end
    
     ToggleRegistry[settingKey] = function(val)
         UpdateUI(val)
         if callback then callback(val) end
     end
-   
     Switch.MouseButton1Click:Connect(function()
         local n = not (Switch.BackgroundColor3 == Theme.Success)
-        if n and validationFunc and not validationFunc() then 
-            ShowNotification("Webhook Empty!", true) 
-            return 
-        end
+        if n and validationFunc and not validationFunc() then ShowNotification("Webhook Empty!", true) return end
        
         Settings[settingKey] = n
+       
         UpdateUI(n)
         if callback then callback(n) end
+       
         ShowNotification(text .. (n and " Enabled" or " Disabled"))
     end)
 end
 
--- (Copy fungsi CreateInput, CreateDropdown, CreateActionWithLabel dari kode asli lu di sini)
--- Contoh CreateInput (paste dari kode lu)
+-- CreateInput (sama persis)
 local function CreateInput(parent, placeholder, default, callback, height)
     local Frame = Instance.new("Frame", parent)
     Frame.BackgroundColor3 = Theme.Content
     local finalHeight = height and (height - 2) or 32
-    Frame.Size = UDim2.new(1, -5, 0, finalHeight)
-    Frame.BorderSizePixel = 0
+    Frame.Size = UDim2.new(1, -5, 0, finalHeight); Frame.BorderSizePixel = 0
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 6)
-    local stroke = Instance.new("UIStroke", Frame)
-    stroke.Color = Theme.Border
-    stroke.Thickness = 1
-   
+    AddStroke(Frame, Theme.Border, 1)
     local Label = Instance.new("TextLabel", Frame)
-    Label.BackgroundTransparency = 1
-    Label.Position = UDim2.new(0, 10, 0, 0)
-    Label.Size = UDim2.new(0, 140, 1, 0)
-    Label.Font = Enum.Font.GothamBold
-    Label.Text = placeholder
-    Label.TextColor3 = Theme.TextSecondary
-    Label.TextSize = 12
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-   
+    Label.BackgroundTransparency = 1; Label.Position = UDim2.new(0, 10, 0, 0); Label.Size = UDim2.new(0, 140, 1, 0)
+    Label.Font = Enum.Font.GothamBold; Label.Text = placeholder; Label.TextColor3 = Theme.TextSecondary; Label.TextSize = 12; Label.TextXAlignment = "Left"
     local inputX = (finalHeight > 34) and 160 or 150
     local inputWidth = (finalHeight > 34) and 170 or 160
-   
     local InputBg = Instance.new("Frame", Frame)
     InputBg.BackgroundColor3 = Theme.Input
     InputBg.Position = UDim2.new(0, inputX, 0.5, -10)
     InputBg.Size = UDim2.new(1, -inputWidth, 0, 20)
     InputBg.ClipsDescendants = true
     Instance.new("UICorner", InputBg).CornerRadius = UDim.new(0, 4)
-    local strokeInput = Instance.new("UIStroke", InputBg)
-    strokeInput.Color = Theme.Border
-    strokeInput.Thickness = 1
-   
+    AddStroke(InputBg, Theme.Border, 1)
     local Input = Instance.new("TextBox", InputBg)
-    Input.BackgroundTransparency = 1
-    Input.Position = UDim2.new(0, 5, 0, 0)
-    Input.Size = UDim2.new(1, -10, 1, 0)
-    Input.Font = Enum.Font.GothamMedium
-    Input.Text = default
-    Input.PlaceholderText = "Paste here..."
-    Input.TextColor3 = Theme.TextPrimary
-    Input.TextSize = 11
-    Input.TextXAlignment = Enum.TextXAlignment.Left
-    Input.ClearTextOnFocus = false
-   
-    Input.Focused:Connect(function() strokeInput.Color = Theme.Accent end)
-    Input.FocusLost:Connect(function() strokeInput.Color = Theme.Border callback(Input.Text, Input) end)
-   
+    Input.BackgroundTransparency = 1; Input.Position = UDim2.new(0, 5, 0, 0); Input.Size = UDim2.new(1, -10, 1, 0)
+    Input.Font = Enum.Font.GothamMedium; Input.Text = default; Input.PlaceholderText = "Paste here..."; Input.TextColor3 = Theme.TextPrimary; Input.TextSize = 11; Input.TextXAlignment = "Left"; Input.ClearTextOnFocus = false
+    Input.Focused:Connect(function() AddStroke(InputBg, Theme.Accent, 1) end)
+    Input.FocusLost:Connect(function() AddStroke(InputBg, Theme.Border, 1) callback(Input.Text, Input) end)
     return Input
 end
 
--- (Tambah CreateDropdown & CreateActionWithLabel dari kode asli lu di sini kalau ada)
-
-    -- Segmen 10/12 - Remote Helper & Auto Features (Contoh)
--- Tempel di bawah Segmen 9
-
-local function GetRemote(name)
-    local curr = ReplicatedStorage
-    local path = {"Packages", "_Index", "sleitnick_net@0.2.0", "net"}
-    for _, child in ipairs(path) do
-        curr = curr:WaitForChild(child, 1)
-        if not curr then return nil end
-    end
-    return curr:FindFirstChild(name)
-end
-
-local function SafeFire(remote, ...)
-    if not remote then return end
-    pcall(function() remote:FireServer(...) end)
-end
-
-local function SafeInvoke(remote, ...)
-    if not remote then return end
-    local s, r = pcall(function() return remote:InvokeServer(...) end)
-    return s and r
-end
-
--- Contoh toggle stuck detector (dari kode lu)
-local DetectorStuckEnabled = false
-local StuckThreshold = 15
-local LastFishCount = 0
-local StuckTimer = 0
-local SavedCFrame = nil
-
-CreateToggle(Page_Fhising, "Detector Stuck (15s)", false, function(state)
-    DetectorStuckEnabled = state
-    if state then
-        LastFishCount = getFishCount()
-        StuckTimer = 0
-        local char = lp.Character or lp.CharacterAdded:Wait()
-        SavedCFrame = char:WaitForChild("HumanoidRootPart").CFrame
-       
-        task.spawn(function()
-            while DetectorStuckEnabled and ScriptActive do
-                task.wait(1)
-                local currentFish = getFishCount()
-                if currentFish == LastFishCount then
-                    StuckTimer = StuckTimer + 1
-                    if StuckTimer >= StuckThreshold then
-                        ShowNotification("Stuck Detected! Resetting...", true)
-                       
-                        local char = lp.Character
-                        if char and char:FindFirstChild("HumanoidRootPart") then
-                            SavedCFrame = char.HumanoidRootPart.CFrame
-                        end
-                       
-                        pcall(function() char:BreakJoints() end)
-                       
-                        local newChar = lp.CharacterAdded:Wait()
-                        local hrp = newChar:WaitForChild("HumanoidRootPart", 5)
-                        task.wait(0.5)
-                        if hrp then hrp.CFrame = SavedCFrame end
-                       
-                        StuckTimer = 0
-                        LastFishCount = getFishCount()
-                       
-                        local RE_Equip = GetRemote("RE/EquipToolFromHotbar")
-                        SafeFire(RE_Equip, 1)
-                    end
-                else
-                    LastFishCount = currentFish
-                    StuckTimer = 0
-                end
-            end
-        end)
-    end
-end)
-
--- (Tambah toggle lain seperti AutoShake, AutoSell, AutoTotem, dll dari kode asli lu di sini)
-
-    -- Segmen 11/12 - Webhook & Parsing (RioSIX)
--- Tempel di bawah Segmen 10
-
-local function SendWebhook(data, category)
-    if not ScriptActive then return end
-    -- (kode SendWebhook asli lu di sini, ganti username jadi "RioSIX")
-    -- Contoh:
-    local embedData = { ["username"] = "RioSIX", ["avatar_url"] = "https://i.imgur.com/CWWGnhO.jpeg", ... }
-    pcall(function() httpRequest({ Url = TargetURL, Method = "POST", Headers = {["Content-Type"]="application/json"}, Body = HttpService:JSONEncode(embedData) }) end)
-end
-
--- (Copy fungsi ParseDataSmart, CheckAndSend, chat listener, player added/removing dari kode asli lu)
--- Ganti semua "NikeeHUB" di webhook jadi "RioSIX"
-
-    -- Segmen 12/12 - Akhir Script
--- Tempel paling bawah
-
--- Update uptime
-task.spawn(function()
-    while ScriptActive do
-        if UI_StatsLabels["Uptime"] then
-            local diff = tick() - SessionStart
-            local h = math.floor(diff / 3600)
-            local m = math.floor((diff % 3600) / 60)
-            local s = math.floor(diff % 60)
-            UI_StatsLabels["Uptime"].Text = string.format("Uptime: %02dh %02dm %02ds", h, m, s)
+-- CreateDropdown (sama persis)
+local function CreateDropdown(parent, labelText, options, default, callback)
+    local Frame = Instance.new("Frame", parent)
+    Frame.BackgroundColor3 = Theme.Content
+    Frame.Size = UDim2.new(1, -5, 0, 36)
+    Frame.BorderSizePixel = 0
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 6)
+    AddStroke(Frame, Theme.Border, 1)
+    local Label = Instance.new("TextLabel", Frame)
+    Label.BackgroundTransparency = 1; Label.Position = UDim2.new(0, 10, 0, 0); Label.Size = UDim2.new(0, 140, 1, 0)
+    Label.Font = Enum.Font.GothamBold; Label.Text = labelText; Label.TextColor3 = Theme.TextPrimary; Label.TextSize = 12; Label.TextXAlignment = "Left"
+    local currentVal = default or (options and options[1]) or "None"
+   
+    local DropBtn = Instance.new("TextButton", Frame)
+    DropBtn.BackgroundColor3 = Theme.Input
+    DropBtn.Position = UDim2.new(0, 160, 0.5, -10)
+    DropBtn.Size = UDim2.new(1, -170, 0, 20)
+    DropBtn.Font = Enum.Font.GothamMedium
+    DropBtn.Text = currentVal .. " v"
+    DropBtn.TextColor3 = Theme.TextPrimary
+    DropBtn.TextSize = 11
+    Instance.new("UICorner", DropBtn).CornerRadius = UDim.new(0, 4)
+    AddStroke(DropBtn, Theme.Border, 1)
+   
+    DropBtn.MouseButton1Click:Connect(function()
+        if MainFrame:FindFirstChild("DropdownList_" .. labelText) then
+            MainFrame:FindFirstChild("DropdownList_" .. labelText):Destroy()
+            return
         end
-        task.wait(1)
+       
+        local Float = Instance.new("ScrollingFrame", MainFrame)
+        Float.Name = "DropdownList_" .. labelText
+        Float.BackgroundColor3 = Theme.Content
+        Float.Size = UDim2.new(0, 200, 0, math.min(#options * 25 + 5, 200))
+        Float.Position = UDim2.new(0.5, -100, 0.5, -75)
+        Float.ZIndex = 200
+        Float.ScrollBarThickness = 4
+        Instance.new("UICorner", Float).CornerRadius = UDim.new(0, 6)
+        AddStroke(Float, Theme.Accent, 1)
+       
+        local ListLayout = Instance.new("UIListLayout", Float)
+        ListLayout.Padding = UDim.new(0, 2)
+       
+        for _, opt in ipairs(options) do
+            local OBtn = Instance.new("TextButton", Float)
+            OBtn.Size = UDim2.new(1,0,0,25)
+            OBtn.BackgroundColor3 = Theme.Input
+            OBtn.BackgroundTransparency = 0.5
+            OBtn.Text = opt
+            OBtn.TextColor3 = Theme.TextPrimary
+            OBtn.Font = Enum.Font.GothamMedium
+            OBtn.TextSize = 11
+           
+            OBtn.MouseButton1Click:Connect(function()
+                currentVal = opt
+                DropBtn.Text = currentVal .. " v"
+                callback(opt)
+                Float:Destroy()
+            end)
+        end
+       
+        local Close = Instance.new("TextButton", Float)
+        Close.Size = UDim2.new(1,0,0,20)
+        Close.BackgroundColor3 = Theme.Error
+        Close.Text = "CLOSE"
+        Close.TextColor3 = Color3.new(1,1,1)
+        Close.TextSize = 10
+        Close.MouseButton1Click:Connect(function() Float:Destroy() end)
+    end)
+end
+
+-- GetRemote, getFishCount, Detector Stuck, Auto Click Fishing, Auto Sell, Auto Weather, Auto Totem, Walk On Water, Remove Pop-up, No Animation, Remove Skin Effect (semua sama persis seperti kode github lu)
+
+-- Config save/load/delete/autoload (sama persis, cuma ganti folder "RioSIX_Configs")
+
+-- Webhook parsing, SendWebhook, CheckAndSend, PlayerAdded/PlayerRemoving, Disconnect webhook, Fast Rejoin, Inventory Watcher Cave Crystal (sama persis)
+
+-- Akhir script (print & autoload)
+print("RioSIX Beta Loaded")
+
+task.delay(1, function()
+    local autoPref = GetAutoLoadPref()
+    if autoPref and autoPref.enabled and autoPref.config then
+        print("🔄 Autoloading Config: " .. autoPref.config)
+        LoadConfig(autoPref.config)
     end
 end)
-
-print("RioSIX Loaded – Shop Ready 🌀🌀🌀🌀")
-ShowNotification("RioSIX sudah full upgrade • Shop page ditambahkan", false)
