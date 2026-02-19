@@ -990,6 +990,15 @@ task.spawn(function()
     end
 end)
 
+CreateToggle(Page_Fishing, "Instant Fishing", false, function(state)
+    Settings.InstantFishingEnabled = state
+    if state then
+        print("[Sentot] Instant Fishing ENABLED")
+    else
+        print("[Sentot] Instant Fishing DISABLED")
+    end
+end)
+
 local DetectorStuckEnabled = false
 local StuckThreshold = 15
 local LastFishCount = 0
