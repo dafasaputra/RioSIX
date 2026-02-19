@@ -16,7 +16,7 @@ local ScreenGui
 local VirtualUser = game:GetService("VirtualUser")
 local SafeName = "RobloxReplicatedService"
 local ProtectGui = protectgui or (syn and syn.protect_gui) or (gethui and function(g) g.Parent = gethui() end) or function(g) g.Parent = CoreGui end
-local fishingngController = require(ReplicatedStorage.Controllers.fishingngController)
+local FishingController = require(ReplicatedStorage.Controllers.FishingController)
 
 task.spawn(function()
     while ScriptActive do
@@ -111,7 +111,7 @@ local function TeleportToLookAt(position, lookVector)
     end
 end
 
-local fishingngAreas = {
+local FishingAreas = {
     ["Leviathan Den"] = {Pos = Vector3.new(3431.640, -287.726, 3529.052), Look = Vector3.new(-0.176, 0.444, -0.879)},
     ["Crystal Depths"] = {Pos = Vector3.new(5820.647, -907.482, 15425.794), Look = Vector3.new(0.131, -0.666, 0.735)},
     ["Pirate Cove"] = {Pos = Vector3.new(3479.794, 4.192, 3451.693), Look = Vector3.new(0.578, -0.396, -0.713)},
@@ -180,7 +180,7 @@ task.spawn(function()
                     pcall(function()
                         queueTeleport([[
                             task.wait(5)
-                            local paths = {"RioSIX/fishingt/fishingt.lua", "fishingt.lua", "fishingt/fishingt.lua"}
+                            local paths = {"RioSIX/FishIt/Fishit.lua", "Fishit.lua", "FishIt/Fishit.lua"}
                             local scriptCode = nil
                             for _, p in ipairs(paths) do
                                 local s, c = pcall(function() return readfile(p) end)
@@ -204,7 +204,7 @@ end)
 
 local TagList = {} 
 local TagUIElements = {} 
-local UI_fishingnput, UI_LeaveInput, UI_ListInput, UI_AdminInput
+local UI_FishInput, UI_LeaveInput, UI_ListInput, UI_AdminInput
 
 local SessionStart = tick()
 local SessionStats = {
@@ -518,7 +518,7 @@ local Page_Save = CreatePage("SaveConfig")
 local Page_Tag = CreatePage("TagDiscord")
 local Page_AdminBoost = CreatePage("AdminBoost")
 local Page_SessionStats = CreatePage("SessionStats")
-local Page_fishing = CreatePage("fishing")
+local Page_Fhising = CreatePage("Fhising")
 local Page_Setting
 
 Page_Webhook.Visible = false
@@ -580,7 +580,7 @@ local function CreateTab(name, target, isDefault)
 end
 
 CreateTab("Server Info", Page_SessionStats, true)
-CreateTab("fishing", Page_fishing)
+CreateTab("Fhising", Page_Fhising)
 
 -- Tambah Tab Shop
 local Page_Shop = CreatePage("Shop")
@@ -666,7 +666,7 @@ local function CreateTeleportButton(parent, text, pos, size, callback)
 end
 
 local sortedAreas = {}
-for name, _ in pairs(fishingngAreas) do table.insert(sortedAreas, name) end
+for name, _ in pairs(FishingAreas) do table.insert(sortedAreas, name) end
 table.sort(sortedAreas)
 
 for i = 1, #sortedAreas, 2 do
@@ -677,13 +677,13 @@ for i = 1, #sortedAreas, 2 do
     Row.BackgroundTransparency = 1
     Row.Size = UDim2.new(1, 0, 0, 35)
     
-    local data1 = fishingngAreas[name1]
+    local data1 = FishingAreas[name1]
     CreateTeleportButton(Row, name1, UDim2.new(0, 0, 0, 0), UDim2.new(0.5, -3, 1, 0), function()
         TeleportToLookAt(data1.Pos, data1.Look)
     end)
     
     if name2 then
-        local data2 = fishingngAreas[name2]
+        local data2 = FishingAreas[name2]
         CreateTeleportButton(Row, name2, UDim2.new(0.5, 3, 0, 0), UDim2.new(0.5, -3, 1, 0), function()
             TeleportToLookAt(data2.Pos, data2.Look)
         end)
@@ -900,7 +900,7 @@ end
 -- Auto Equip Rod (otomatis equip rod slot 1 setiap loop)
 local AutoEquipRodEnabled = false
 
-CreateToggle(Page_fishing, "Auto Equip Rod", false, function(state)
+CreateToggle(Page_Fhising, "Auto Equip Rod", false, function(state)
     AutoEquipRodEnabled = state
     if state then
         task.spawn(function()
@@ -925,7 +925,7 @@ CreateToggle(Page_fishing, "Auto Equip Rod", false, function(state)
     end
 end)
 
--- Instant fishingng dengan delay yang bisa diubah dari UI
+-- Instant Fishing dengan delay yang bisa diubah dari UI
 local IF={Remotes={Charge=nil,Request=nil,Cancel=nil,Claim=nil},Initialized=false,Enabled=false}
 
 local function IF_Init()
@@ -933,9 +933,9 @@ local function IF_Init()
     local s,r=pcall(function()
         local np=ReplicatedStorage:WaitForChild("Packages",5):WaitForChild("_Index",5):WaitForChild("sleitnick_net@0.2.0",5):WaitForChild("net",5)
         if np then
-            IF.Remotes.Charge=np:WaitForChild("RF/ChargefishingngRod",3)
-            IF.Remotes.Request=np:WaitForChild("RF/RequestfishingngMinigameStarted",3)
-            IF.Remotes.Cancel=np:WaitForChild("RF/CancelfishingngInputs",3)
+            IF.Remotes.Charge=np:WaitForChild("RF/ChargeFishingRod",3)
+            IF.Remotes.Request=np:WaitForChild("RF/RequestFishingMinigameStarted",3)
+            IF.Remotes.Cancel=np:WaitForChild("RF/CancelFishingInputs",3)
             IF.Remotes.Claim=np:WaitForChild("RF/CatchFishCompleted",3)
             IF.Initialized=IF.Remotes.Charge and IF.Remotes.Request and IF.Remotes.Cancel and IF.Remotes.Claim
             return IF.Initialized
@@ -945,7 +945,7 @@ local function IF_Init()
     return s and r
 end
 
-local function IF_fishingngLoop()
+local function IF_FishingLoop()
     while IF.Enabled and ScriptActive do
         -- Cancel
         pcall(function() IF.Remotes.Cancel:InvokeServer() end)
@@ -954,25 +954,25 @@ local function IF_fishingngLoop()
         -- Request
         pcall(function() IF.Remotes.Request:InvokeServer(-1.233184814453125,0.0017426679483021346,tick()) end)
         -- Wait
-        task.wait(Settings.InstantfishingngCompleteDelay or 0.7)
+        task.wait(Settings.InstantFishingCompleteDelay or 0.7)
         -- Claim Parallel
-        for i=1,(Settings.InstantfishingngClaimAmount or 3) do
+        for i=1,(Settings.InstantFishingClaimAmount or 3) do
             task.spawn(function() pcall(function() IF.Remotes.Claim:InvokeServer() end) end)
         end
         -- Cast Delay
-        task.wait(Settings.InstantfishingngCastDelay or 0.1)
+        task.wait(Settings.InstantFishingCastDelay or 0.1)
     end
 end
 
 function IF_Start()
     if not IF_Init() then
-        ShowNotification("fishingng Remotes Missing!",true)
-        Settings.InstantfishingngEnabled=false
+        ShowNotification("Fishing Remotes Missing!",true)
+        Settings.InstantFishingEnabled=false
         return
     end
     IF.Enabled=true
-    -- Start fishingng loop
-    task.spawn(IF_fishingngLoop)
+    -- Start fishing loop
+    task.spawn(IF_FishingLoop)
 end
 
 function IF_Stop()
@@ -982,20 +982,20 @@ end
 -- Monitor Toggle
 task.spawn(function()
     while ScriptActive do
-        if Settings.InstantfishingngEnabled and not IF.Enabled then
+        if Settings.InstantFishingEnabled and not IF.Enabled then
             IF_Start()
-            repeat task.wait(0.1) until not Settings.InstantfishingngEnabled or not ScriptActive
+            repeat task.wait(0.1) until not Settings.InstantFishingEnabled or not ScriptActive
         end
         task.wait(0.1)
     end
 end)
 
-CreateToggle(Page_fishingng, "Instant fishingng", false, function(state)
-    Settings.InstantfishingngEnabled = state
+CreateToggle(Page_Fishing, "Instant Fishing", false, function(state)
+    Settings.InstantFishingEnabled = state
     if state then
-        print("[Sentot] Instant fishingng ENABLED")
+        print("[Sentot] Instant Fishing ENABLED")
     else
-        print("[Sentot] Instant fishingng DISABLED")
+        print("[Sentot] Instant Fishing DISABLED")
     end
 end)
 
@@ -1005,7 +1005,7 @@ local LastFishCount = 0
 local StuckTimer = 0
 local SavedCFrame = nil
 
-CreateToggle(Page_fishing, "Detector Stuck (15s)", false, function(state)
+CreateToggle(Page_Fhising, "Detector Stuck (15s)", false, function(state)
     DetectorStuckEnabled = state
     if state then
         LastFishCount = getFishCount()
@@ -1050,14 +1050,14 @@ CreateToggle(Page_fishing, "Detector Stuck (15s)", false, function(state)
 end)
 
 local AutoShakeEnabled = false
-CreateToggle(Page_fishing, "Auto Click fishingng", false, function(val)
+CreateToggle(Page_Fhising, "Auto Click Fishing", false, function(val)
     AutoShakeEnabled = val
     local clickEffect = Players.LocalPlayer.PlayerGui:FindFirstChild("!!! Click Effect")
     if AutoShakeEnabled then
         if clickEffect then clickEffect.Enabled = false end
         task.spawn(function()
             while AutoShakeEnabled and ScriptActive do
-                pcall(function() fishingngController:RequestfishingngMinigameClick() end)
+                pcall(function() FishingController:RequestFishingMinigameClick() end)
                 task.wait(0.1)
             end
         end)
@@ -1070,7 +1070,7 @@ local AutoSellEnabled = false
 local SellMethod = "Count" 
 local SellValue = 600 
 
-CreateToggle(Page_fishing, "Auto Sell (10m / 600 Items)", false, function(state)
+CreateToggle(Page_Fhising, "Auto Sell (10m / 600 Items)", false, function(state)
     AutoSellEnabled = state
     if state then
         local RF_Sell = GetRemote("RF/SellAllItems")
@@ -1104,7 +1104,7 @@ end)
 local WeatherList = { "Wind", "Cloudy", "Storm" }
 local SimpleWeatherEnabled = false
 
-CreateToggle(Page_fishing, "Enable Auto Buy Weather", false, function(state)
+CreateToggle(Page_Fhising, "Enable Auto Buy Weather", false, function(state)
     SimpleWeatherEnabled = state
     if state then
         local RF_BuyWeather = GetRemote("RF/PurchaseWeatherEvent")
@@ -1128,8 +1128,8 @@ local SelectedTotem = "Luck Totem"
 local TotemMap = {["Luck Totem"]=1, ["Mutation Totem"]=2, ["Shiny Totem"]=3}
 local AutoTotemEnabled = false
 
-CreateDropdown(Page_fishing, "Select Totem", TotemList, "Luck Totem", function(v) SelectedTotem = v end)
-CreateToggle(Page_fishing, "Enable Auto Spawn Totem", false, function(state)
+CreateDropdown(Page_Fhising, "Select Totem", TotemList, "Luck Totem", function(v) SelectedTotem = v end)
+CreateToggle(Page_Fhising, "Enable Auto Spawn Totem", false, function(state)
     AutoTotemEnabled = state
     if state then
         local RE_Spawn = GetRemote("RE/SpawnTotem")
@@ -1448,7 +1448,7 @@ local function LoadConfig(configName)
             Current_Webhook_Leave = data.Webhooks.Leave or ""
             Current_Webhook_List = data.Webhooks.List or ""
             
-            if UI_fishingnput then UI_fishingnput.Text = Current_Webhook_Fish end
+            if UI_FishInput then UI_FishInput.Text = Current_Webhook_Fish end
             if UI_LeaveInput then UI_LeaveInput.Text = Current_Webhook_Leave end
             if UI_ListInput then UI_ListInput.Text = Current_Webhook_List end
             
@@ -2004,7 +2004,7 @@ end)
 
 local SpacerW = Instance.new("Frame", View_Webhook); SpacerW.BackgroundTransparency=1; SpacerW.Size=UDim2.new(1,0,0,0); SpacerW.LayoutOrder = -1
 
-UI_fishingnput = CreateInput(View_Webhook, "Fish Caught", Current_Webhook_Fish, function(v) Current_Webhook_Fish = v end)
+UI_FishInput = CreateInput(View_Webhook, "Fish Caught", Current_Webhook_Fish, function(v) Current_Webhook_Fish = v end)
 UI_LeaveInput = CreateInput(View_Webhook, "Player Leave", Current_Webhook_Leave, function(v) Current_Webhook_Leave = v end)
 UI_ListInput = CreateInput(View_Webhook, "Player List", Current_Webhook_List, function(v) Current_Webhook_List = v end)
 UI_AdminInput = CreateInput(View_Webhook, "Admin Host", Current_Webhook_Admin, function(v) Current_Webhook_Admin = v end)
