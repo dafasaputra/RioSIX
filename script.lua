@@ -631,47 +631,6 @@ CreateShopCategory("Charm")
 CreateShopCategory("Bobber")
 CreateShopCategory("Rod")
 
-
--- Sentot: Merchant Toggle di Page_Shop (Auto Open via Remote)
-local merchantToggle = false  -- Default off
-
-CreateToggle(Page_Shop, "Merchant Auto Open (Hotkey M)", merchantToggle, function(state)
-    merchantToggle = state
-    
-    if state then
-        -- Fire remote untuk open Merchant
-        local success, err = pcall(function()
-            DialogueEnded:FireServer("Merchant")  -- Parameter utama
-        end)
-        
-        if success then
-            print("[Sentot] Merchant TOGGLE ON - Shop dibuka via remote")
-        else
-            print("[Sentot] Fire failed: " .. tostring(err) .. " - Coba dekat NPC Merchant")
-        end
-    else
-        -- Attempt close
-        pcall(function()
-            DialogueEnded:FireServer("Close")
-        end)
-        print("[Sentot] Merchant TOGGLE OFF - Attempt close")
-    end
-end)
-
--- Hotkey M backup (bisa dipakai meski toggle off)
-spawn(function()
-    while true do
-        wait()
-        if UserInputService:IsKeyDown(Enum.KeyCode.M) and not merchantToggle then
-            -- Hanya jalankan kalau toggle mati, biar ga double
-            pcall(function()
-                DialogueEnded:FireServer("Merchant")
-            end)
-            wait(0.4)  -- Debounce biar ga spam
-        end
-    end
-end)
-
 local Page_Teleport = CreatePage("Teleport")
 
 
