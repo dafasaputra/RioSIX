@@ -55,8 +55,8 @@ if getgenv then
     getgenv().Byu_Stop = CleanupScript
 end
 
-if not isfolder("Rio_Configs") then 
-    pcall(function() makefolder("Rio_Configs") end)
+if not isfolder("RioSIX_Configs") then 
+    pcall(function() makefolder("RioSIX_Configs") end)
 end
 
 local Theme = {
@@ -97,6 +97,59 @@ local SecretList = {
 
 local StoneList = { "Ruby" }
 
+local SecretFishPrices = {
+    ["Crystal Crab"] = "250,000",
+    ["Orca"] = "300,000",
+    ["Zombie Shark"] = "350,000",
+    ["Zombie Megalodon"] = "500,000",
+    ["Dead Zombie Shark"] = "400,000",
+    ["Blob Shark"] = "200,000",
+    ["Ghost Shark"] = "350,000",
+    ["Skeleton Narwhal"] = "300,000",
+    ["Ghost Worm Fish"] = "250,000",
+    ["Worm Fish"] = "150,000",
+    ["Megalodon"] = "400,000",
+    ["1x1x1x1 Comet Shark"] = "1,000,000",
+    ["Bloodmoon Whale"] = "450,000",
+    ["Lochness Monster"] = "400,000",
+    ["Monster Shark"] = "350,000",
+    ["Eerie Shark"] = "300,000",
+    ["Great Whale"] = "350,000",
+    ["Frostborn Shark"] = "300,000",
+    ["Armored Shark"] = "280,000",
+    ["Scare"] = "250,000",
+    ["Queen Crab"] = "300,000",
+    ["King Crab"] = "400,000",
+    ["Cryoshade Glider"] = "320,000",
+    ["Panther Eel"] = "280,000",
+    ["Giant Squid"] = "350,000",
+    ["Depthseeker Ray"] = "300,000",
+    ["Robot Kraken"] = "500,000",
+    ["Mosasaur Shark"] = "450,000",
+    ["King Jelly"] = "380,000",
+    ["Bone Whale"] = "400,000",
+    ["Elshark Gran Maja"] = "420,000",
+    ["Elpirate Gran Maja"] = "440,000",
+    ["Ancient Whale"] = "450,000",
+    ["Gladiator Shark"] = "400,000",
+    ["Ancient Lochness Monster"] = "500,000",
+    ["Talon Serpent"] = "380,000",
+    ["Hacker Shark"] = "450,000",
+    ["ElRetro Gran Maja"] = "430,000",
+    ["Strawberry Choc Megalodon"] = "480,000",
+    ["Krampus Shark"] = "450,000",
+    ["Emerald Winter Whale"] = "500,000",
+    ["Winter Frost Shark"] = "420,000",
+    ["Icebreaker Whale"] = "460,000",
+    ["Leviathan"] = "600,000",
+    ["Pirate Megalodon"] = "480,000",
+    ["Viridis Lurker"] = "400,000",
+    ["Cursed Kraken"] = "550,000",
+    ["Ancient Magma Whale"] = "520,000",
+    ["Rainbow Comet Shark"] = "550,000",
+    ["Love Nessie"] = "480,000",
+}
+
 local function TeleportToLookAt(position, lookVector)
     local Character = Players.LocalPlayer.Character
     if not Character then Character = Players.LocalPlayer.CharacterAdded:Wait() end
@@ -133,15 +186,16 @@ local FishingAreas = {
     ["Underground Cellar"] = {Pos = Vector3.new(2118.417, -91.448, -733.800), Look = Vector3.new(0.854, 0.000, 0.521)},
     ["Volcano"] = {Pos = Vector3.new(-552.797, 21.174, 186.940), Look = Vector3.new(-0.251, -0.534, -0.808)},
     ["Volcanic Cavern"] = {Pos = Vector3.new(1249.005, 82.830, -10224.920), Look = Vector3.new(-0.649, -0.666, 0.368)},
+    ["Heartfelt Island"] = {Pos = Vector3.new(1114.075, 4.846, 2712.839), Look = Vector3.new(0.995, 0.000, -0.103)},
 }
 
-local Settings = { 
-    SecretEnabled = false, 
-    RubyEnabled = false, 
+local Settings = {
+    SecretEnabled = false,
+    RubyEnabled = false,
 
     MutationCrystalized = false,
     CaveCrystalEnabled = false,
-    LeaveEnabled = false, 
+    LeaveEnabled = false,
     PlayerNonPSAuto = false,
     ForeignDetection = false,
     SpoilerName = true,
@@ -150,7 +204,37 @@ local Settings = {
     NoAnimation = false,
     RemoveVFX = false,
     DisablePopups = false,
-    EvolvedEnabled = false
+    EvolvedEnabled = false,
+
+    -- Instant Fishing Settings
+    InstantFishingEnabled = false,
+    InstantFishingCompleteDelay = 0.7,
+    InstantFishingCastDelay = 0.1,
+    InstantFishingClaimAmount = 3,
+
+    -- Auto Sell Settings
+    AutoSellThreshold = 600,
+    AutoSellEnabled = false,
+
+    -- Auto Weather Settings
+    AutoWeatherEnabled = false,
+
+    -- Auto Totem Settings
+    AutoTotemEnabled = false,
+    SelectedTotem = "Luck Totem",
+
+    -- Auto Equip Rod Settings
+    AutoEquipRodEnabled = false,
+
+    -- Detector Stuck Settings
+    DetectorStuckEnabled = false,
+    StuckThreshold = 15,
+
+    -- Auto Click Fishing
+    AutoClickFishingEnabled = false,
+
+    -- Walk On Water
+    WalkOnWaterEnabled = false
 }
 
 task.spawn(function()
@@ -180,7 +264,7 @@ task.spawn(function()
                     pcall(function()
                         queueTeleport([[
                             task.wait(5)
-                            local paths = {"RioSIX/FishIt/Fishit.lua", "Fishit.lua", "FishIt/Fishit.lua"}
+                            local paths = {"RioSIX/FishIt/fishit.lua", "fishit.lua", "FishIt/fishit.lua"}
                             local scriptCode = nil
                             for _, p in ipairs(paths) do
                                 local s, c = pcall(function() return readfile(p) end)
@@ -202,9 +286,10 @@ task.spawn(function()
     if not success then warn("RioSIX: AutoExecute Not Supported: " .. tostring(err)) end
 end)
 
-local TagList = {} 
-local TagUIElements = {} 
+local TagList = {}
+local TagUIElements = {}
 local UI_FishInput, UI_LeaveInput, UI_ListInput, UI_AdminInput
+local UI_CompleteDelayInput, UI_CastDelayInput, UI_ClaimAmountInput, UI_AutoSellThresholdInput
 
 local SessionStart = tick()
 local SessionStats = {
@@ -502,13 +587,13 @@ local function CreatePage(name)
     Page.ScrollBarImageColor3 = Theme.Accent
     Page.Visible = false
     Page.CanvasSize = UDim2.new(0, 0, 0, 0)
-    Page.AutomaticCanvasSize = "Y"
+    Page.AutomaticCanvasSize = Enum.AutomaticSize.Y
     Page.ZIndex = 4
-    
+
     local layout = Instance.new("UIListLayout", Page)
-    layout.Padding = UDim.new(0, 6) 
-    layout.SortOrder = Enum.SortOrder.LayoutOrder 
-    
+    layout.Padding = UDim.new(0, 6)
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+
     return Page
 end
 
@@ -581,55 +666,6 @@ end
 
 CreateTab("Server Info", Page_SessionStats, true)
 CreateTab("Fhising", Page_Fhising)
-
--- Tambah Tab Shop
-local Page_Shop = CreatePage("Shop")
-CreateTab("Shop", Page_Shop)
-
--- Isi Shop sederhana
-local ShopTitle = Instance.new("TextLabel", Page_Shop)
-ShopTitle.BackgroundTransparency = 1
-ShopTitle.Size = UDim2.new(1, 0, 0, 40)
-ShopTitle.Font = Enum.Font.GothamBlack
-ShopTitle.Text = "RIO SIX SHOP"
-ShopTitle.TextColor3 = Theme.Accent
-ShopTitle.TextSize = 18
-ShopTitle.TextXAlignment = Enum.TextXAlignment.Center
-
-local function CreateShopCategory(name)
-    local CatFrame = Instance.new("Frame", Page_Shop)
-    CatFrame.BackgroundColor3 = Theme.Content
-    CatFrame.Size = UDim2.new(1, -10, 0, 180)
-    CatFrame.BorderSizePixel = 0
-    Instance.new("UICorner", CatFrame).CornerRadius = UDim.new(0, 8)
-    local stroke = Instance.new("UIStroke", CatFrame)
-    stroke.Color = Theme.Border
-    stroke.Thickness = 1
-
-    local CatLabel = Instance.new("TextLabel", CatFrame)
-    CatLabel.BackgroundTransparency = 1
-    CatLabel.Size = UDim2.new(1, 0, 0, 30)
-    CatLabel.Font = Enum.Font.GothamBold
-    CatLabel.Text = name
-    CatLabel.TextColor3 = Theme.AccentHover
-    CatLabel.TextSize = 16
-    CatLabel.TextXAlignment = Enum.TextXAlignment.Center
-
-    local Placeholder = Instance.new("TextLabel", CatFrame)
-    Placeholder.BackgroundTransparency = 1
-    Placeholder.Size = UDim2.new(1, -20, 1, -50)
-    Placeholder.Position = UDim2.new(0, 10, 0, 40)
-    Placeholder.Font = Enum.Font.GothamMedium
-    Placeholder.Text = "Fitur " .. name .. " (Auto Buy / Preview / Toggle)\nComing soon / Customize di sini"
-    Placeholder.TextColor3 = Theme.TextSecondary
-    Placeholder.TextSize = 13
-    Placeholder.TextWrapped = true
-end
-
-CreateShopCategory("Merchant")
-CreateShopCategory("Charm")
-CreateShopCategory("Bobber")
-CreateShopCategory("Rod")
 
 local Page_Teleport = CreatePage("Teleport")
 
@@ -885,47 +921,43 @@ local function GetRemote(name)
 end
 
 local function getFishCount()
+    -- UI method - most accurate for Fish It (works when inventory is open)
     local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui", 5)
-    if not playerGui then return 0 end
-    local inv = playerGui:FindFirstChild("Inventory")
-    if inv then
-        local label = inv:FindFirstChild("Main") and inv.Main:FindFirstChild("Top") and inv.Main.Top:FindFirstChild("Options") and inv.Main.Top.Options:FindFirstChild("Fish") and inv.Main.Top.Options.Fish:FindFirstChild("Label") and inv.Main.Top.Options.Fish.Label:FindFirstChild("BagSize")
-        if label then
-            return tonumber((label.Text or "0/???"):match("(%d+)/")) or 0
+    if playerGui then
+        local inv = playerGui:FindFirstChild("Inventory")
+        if inv then
+            local mainFrame = inv:FindFirstChild("Main")
+            if mainFrame then
+                local topFrame = mainFrame:FindFirstChild("Top")
+                if topFrame then
+                    local options = topFrame:FindFirstChild("Options")
+                    if options then
+                        local fishOption = options:FindFirstChild("Fish")
+                        if fishOption then
+                            local label = fishOption:FindFirstChild("Label") and fishOption.Label:FindFirstChild("BagSize")
+                            if label then
+                                local count = tonumber((label.Text or "0/???"):match("(%d+)/"))
+                                if count then return count end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    -- Fallback: Count all items in inventory (in Fish It, bag inventory = fish only)
+    local Replion = require(game:GetService("ReplicatedStorage").Packages.Replion).Client:WaitReplion("Data", 1)
+    if Replion then
+        local s, d = pcall(function() return Replion:GetExpect("Inventory") end)
+        if s and d and d.Items then
+            return #d.Items
         end
     end
     return 0
 end
 
--- Auto Equip Rod (otomatis equip rod slot 1 setiap loop)
-local AutoEquipRodEnabled = false
-
-CreateToggle(Page_Fhising, "Auto Equip Rod", false, function(state)
-    AutoEquipRodEnabled = state
-    if state then
-        task.spawn(function()
-            while AutoEquipRodEnabled and ScriptActive do
-                pcall(function()
-                    -- Equip rod di slot 1
-                    local RE_Equip = GetRemote("RE/EquipToolFromHotbar")
-                    if RE_Equip then
-                        RE_Equip:FireServer(1)  -- 1 = slot pertama (rod)
-                        -- Optional: print debug kalau mau cek
-                        -- print("Auto Equip Rod: Rod equipped (slot 1)")
-                    else
-                        ShowNotification("Remote Equip Not Found!", true)
-                    end
-                end)
-                task.wait(2)  -- equip ulang setiap 4 detik (aman, ga spam server)
-            end
-        end)
-        ShowNotification("Auto Equip Rod ON", false)
-    else
-        ShowNotification("Auto Equip Rod OFF", false)
-    end
-end)
-
--- Instant Fishing dengan delay yang bisa diubah dari UI
+-- Instant Fishing (RioSIX.lua Pattern - No Delay)
 local IF={Remotes={Charge=nil,Request=nil,Cancel=nil,Claim=nil},Initialized=false,Enabled=false}
 
 local function IF_Init()
@@ -979,7 +1011,7 @@ function IF_Stop()
     IF.Enabled=false
 end
 
--- Monitor Toggle
+-- Monitor Toggle (RioSIX Pattern)
 task.spawn(function()
     while ScriptActive do
         if Settings.InstantFishingEnabled and not IF.Enabled then
@@ -990,14 +1022,136 @@ task.spawn(function()
     end
 end)
 
-CreateToggle(Page_Fishing, "Instant Fishing", false, function(state)
-    Settings.InstantFishingEnabled = state
-    if state then
-        print("[Sentot] Instant Fishing ENABLED")
-    else
-        print("[Sentot] Instant Fishing DISABLED")
+-- Auto Equip Rod - Continuous Monitor
+local AutoEquipRodLastEquipTime = 0
+local AutoEquipRodCooldown = 0.5 -- Delay 0.5 detik
+
+task.spawn(function()
+    local lastEquipTime = 0
+    local equipCooldown = 0.5 -- Delay 0.5 detik
+    
+    while ScriptActive do
+        if Settings.AutoEquipRodEnabled then
+            local currentChar = Players.LocalPlayer.Character
+            if currentChar then
+                local humanoid = currentChar:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    local equippedTool = humanoid:FindFirstChildOfClass("Tool")
+                    local shouldEquipRod = false
+                    
+                    if not equippedTool then
+                        -- Tidak memegang apapun → equip rod
+                        shouldEquipRod = true
+                    else
+                        -- Memegang tool, check apakah ini rod?
+                        local toolName = equippedTool.Name:lower()
+                        -- Hanya equip jika BUKAN rod (memegang ikan atau tool lain)
+                        if not toolName:find("rod") and not toolName:find("fishing") then
+                            shouldEquipRod = true
+                        end
+                    end
+                    
+                    -- Equip rod dengan cooldown
+                    if shouldEquipRod and (tick() - lastEquipTime) > equipCooldown then
+                        pcall(function()
+                            local EquipRemote = GetRemote("RE/EquipToolFromHotbar")
+                            if EquipRemote then
+                                EquipRemote:FireServer(1)
+                                lastEquipTime = tick()
+                            end
+                        end)
+                    end
+                end
+            end
+        end
+        task.wait(0.05)
     end
 end)
+
+-- Auto Equip Rod UI Section (Moved to Top)
+do
+    local lbl = Instance.new("TextLabel", Page_Fhising)
+    lbl.BackgroundTransparency = 1
+    lbl.Size = UDim2.new(1, -5, 0, 20)
+    lbl.Font = Enum.Font.GothamBold
+    lbl.Text = "🎣 Auto Equip Rod"
+    lbl.TextColor3 = Theme.Accent
+    lbl.TextSize = 12
+    lbl.TextXAlignment = "Left"
+end
+
+CreateToggle(Page_Fhising, "Enable Auto Equip Rod", "AutoEquipRodEnabled", function(state)
+    Settings.AutoEquipRodEnabled = state
+    if state then
+        ShowNotification("Auto Equip Rod Enabled", false)
+    else
+        ShowNotification("Auto Equip Rod Disabled", false)
+    end
+end)
+
+-- Instant Fishing UI Section
+do
+    local lbl = Instance.new("TextLabel", Page_Fhising)
+    lbl.BackgroundTransparency = 1
+    lbl.Size = UDim2.new(1, -5, 0, 20)
+    lbl.Font = Enum.Font.GothamBold
+    lbl.Text = "⚡ Instant Fishing"
+    lbl.TextColor3 = Theme.Accent
+    lbl.TextSize = 12
+    lbl.TextXAlignment = "Left"
+end
+
+CreateToggle(Page_Fhising, "Enable Instant Fishing", "InstantFishingEnabled", function(state)
+    if state then
+        if not IF_Init() then
+            ShowNotification("Fishing Remotes Missing!",true)
+            Settings.InstantFishingEnabled=false
+            return
+        end
+        IF.Enabled=true
+        task.spawn(IF_FishingLoop)
+        ShowNotification("Instant Fishing Enabled", false)
+    else
+        IF.Enabled=false
+        ShowNotification("Instant Fishing Disabled", false)
+    end
+end)
+
+UI_CompleteDelayInput = CreateInput(Page_Fhising, "Complete Delay (s)", tostring(Settings.InstantFishingCompleteDelay), function(text)
+    local val = tonumber(text)
+    if val then
+        Settings.InstantFishingCompleteDelay = val
+        ShowNotification("Complete Delay set to " .. val, false)
+    end
+end)
+
+UI_CastDelayInput = CreateInput(Page_Fhising, "Cast Delay (s)", tostring(Settings.InstantFishingCastDelay), function(text)
+    local val = tonumber(text)
+    if val then
+        Settings.InstantFishingCastDelay = val
+        ShowNotification("Cast Delay set to " .. val, false)
+    end
+end)
+
+UI_ClaimAmountInput = CreateInput(Page_Fhising, "Claim Amount", tostring(Settings.InstantFishingClaimAmount), function(text)
+    local val = tonumber(text)
+    if val then
+        Settings.InstantFishingClaimAmount = math.floor(val)
+        ShowNotification("Claim Amount set to " .. Settings.InstantFishingClaimAmount, false)
+    end
+end)
+
+-- Detector Stuck & Auto Click Fishing Section
+do
+    local lbl = Instance.new("TextLabel", Page_Fhising)
+    lbl.BackgroundTransparency = 1
+    lbl.Size = UDim2.new(1, -5, 0, 20)
+    lbl.Font = Enum.Font.GothamBold
+    lbl.Text = "🔧 Fishing Utilities"
+    lbl.TextColor3 = Theme.Accent
+    lbl.TextSize = 12
+    lbl.TextXAlignment = "Left"
+end
 
 local DetectorStuckEnabled = false
 local StuckThreshold = 15
@@ -1005,14 +1159,15 @@ local LastFishCount = 0
 local StuckTimer = 0
 local SavedCFrame = nil
 
-CreateToggle(Page_Fhising, "Detector Stuck (15s)", false, function(state)
+CreateToggle(Page_Fhising, "Detector Stuck (15s)", "DetectorStuckEnabled", function(state)
+    Settings.DetectorStuckEnabled = state
     DetectorStuckEnabled = state
     if state then
         LastFishCount = getFishCount()
         StuckTimer = 0
         local char = Players.LocalPlayer.Character or Players.LocalPlayer.CharacterAdded:Wait()
         SavedCFrame = char:WaitForChild("HumanoidRootPart").CFrame
-        
+
         task.spawn(function()
             while DetectorStuckEnabled and ScriptActive do
                 task.wait(1)
@@ -1021,22 +1176,22 @@ CreateToggle(Page_Fhising, "Detector Stuck (15s)", false, function(state)
                     StuckTimer = StuckTimer + 1
                     if StuckTimer >= StuckThreshold then
                          ShowNotification("Stuck Detected! Resetting...", true)
-                         
+
                          local char = Players.LocalPlayer.Character
                          if char and char:FindFirstChild("HumanoidRootPart") then
                             SavedCFrame = char.HumanoidRootPart.CFrame
                          end
-                         
+
                          if char then char:BreakJoints() end
-                         
+
                          local newChar = Players.LocalPlayer.CharacterAdded:Wait()
                          local hrp = newChar:WaitForChild("HumanoidRootPart")
                          task.wait(0.5)
                          hrp.CFrame = SavedCFrame
-                         
+
                          StuckTimer = 0
                          LastFishCount = getFishCount()
-                         
+
                          local RE_Equip = GetRemote("RE/EquipToolFromHotbar")
                          if RE_Equip then pcall(function() RE_Equip:FireServer(1) end) end
                     end
@@ -1050,8 +1205,9 @@ CreateToggle(Page_Fhising, "Detector Stuck (15s)", false, function(state)
 end)
 
 local AutoShakeEnabled = false
-CreateToggle(Page_Fhising, "Auto Click Fishing", false, function(val)
+CreateToggle(Page_Fhising, "Auto Click Fishing", "AutoClickFishingEnabled", function(val)
     AutoShakeEnabled = val
+    Settings.AutoClickFishingEnabled = val
     local clickEffect = Players.LocalPlayer.PlayerGui:FindFirstChild("!!! Click Effect")
     if AutoShakeEnabled then
         if clickEffect then clickEffect.Enabled = false end
@@ -1066,46 +1222,60 @@ CreateToggle(Page_Fhising, "Auto Click Fishing", false, function(val)
     end
 end)
 
-local AutoSellEnabled = false
-local SellMethod = "Count" 
-local SellValue = 600 
+-- do
+--     local lbl = Instance.new("TextLabel", Page_Fhising)
+--     lbl.BackgroundTransparency = 1
+--     lbl.Size = UDim2.new(1, -5, 0, 20)
+--     lbl.Font = Enum.Font.GothamBold
+--     lbl.Text = "⚙️ Fishing Settings:"
+--     lbl.TextColor3 = Theme.TextSecondary
+--     lbl.TextSize = 11
+--     lbl.TextXAlignment = "Left"
+-- end
 
-CreateToggle(Page_Fhising, "Auto Sell (10m / 600 Items)", false, function(state)
+
+
+local AutoSellEnabled = false
+
+CreateToggle(Page_Fhising, "Auto Sell", "AutoSellEnabled", function(state)
     AutoSellEnabled = state
+    Settings.AutoSellEnabled = state
     if state then
         local RF_Sell = GetRemote("RF/SellAllItems")
         if not RF_Sell then ShowNotification("Remote Sell Missing!", true) AutoSellEnabled = false return end
-        
-        task.spawn(function()
-            local LastSellTime = tick()
-            while AutoSellEnabled and ScriptActive do
-                if (tick() - LastSellTime) >= 600 then
-                    pcall(function() RF_Sell:InvokeServer() end)
-                    LastSellTime = tick()
-                end
 
-                local Replion = require(game:GetService("ReplicatedStorage").Packages.Replion).Client:WaitReplion("Data", 1)
-                if Replion then
-                     local s, d = pcall(function() return Replion:GetExpect("Inventory") end)
-                     if s and d and d.Items then
-                        if #d.Items >= SellValue then
-                            pcall(function() RF_Sell:InvokeServer() end)
-                            LastSellTime = tick()
-                            task.wait(1)
-                        end
-                     end
+        task.spawn(function()
+            local lastSellCount = 0
+            while AutoSellEnabled and ScriptActive do
+                local currentFish = getFishCount()
+                if currentFish >= Settings.AutoSellThreshold and currentFish ~= lastSellCount and currentFish > 0 then
+                    pcall(function() RF_Sell:InvokeServer() end)
+                    ShowNotification("Auto Sold " .. currentFish .. " fish!", false)
+                    lastSellCount = currentFish
+                    task.wait(3)
                 end
-                task.wait(1)
+                task.wait(0.5)
             end
         end)
+    else
+        ShowNotification("Auto Sell OFF", false)
+    end
+end)
+
+UI_AutoSellThresholdInput = CreateInput(Page_Fhising, "Auto Sell Threshold (Items)", tostring(Settings.AutoSellThreshold), function(text)
+    local val = tonumber(text)
+    if val and val > 0 then
+        Settings.AutoSellThreshold = math.floor(val)
+        ShowNotification("Auto Sell Threshold set to " .. Settings.AutoSellThreshold, false)
     end
 end)
 
 local WeatherList = { "Wind", "Cloudy", "Storm" }
 local SimpleWeatherEnabled = false
 
-CreateToggle(Page_Fhising, "Enable Auto Buy Weather", false, function(state)
+CreateToggle(Page_Fhising, "Enable Auto Buy Weather", "AutoWeatherEnabled", function(state)
     SimpleWeatherEnabled = state
+    Settings.AutoWeatherEnabled = state
     if state then
         local RF_BuyWeather = GetRemote("RF/PurchaseWeatherEvent")
         if not RF_BuyWeather then ShowNotification("Remote Weather Missing!", true) SimpleWeatherEnabled = false return end
@@ -1128,9 +1298,13 @@ local SelectedTotem = "Luck Totem"
 local TotemMap = {["Luck Totem"]=1, ["Mutation Totem"]=2, ["Shiny Totem"]=3}
 local AutoTotemEnabled = false
 
-CreateDropdown(Page_Fhising, "Select Totem", TotemList, "Luck Totem", function(v) SelectedTotem = v end)
-CreateToggle(Page_Fhising, "Enable Auto Spawn Totem", false, function(state)
+CreateDropdown(Page_Fhising, "Select Totem", TotemList, Settings.SelectedTotem or "Luck Totem", function(v) 
+    SelectedTotem = v 
+    Settings.SelectedTotem = v 
+end)
+CreateToggle(Page_Fhising, "Enable Auto Spawn Totem", "AutoTotemEnabled", function(state)
     AutoTotemEnabled = state
+    Settings.AutoTotemEnabled = state
     if state then
         local RE_Spawn = GetRemote("RE/SpawnTotem")
         local RE_Equip = GetRemote("RE/EquipToolFromHotbar")
@@ -1166,8 +1340,6 @@ CreateToggle(Page_Fhising, "Enable Auto Spawn Totem", false, function(state)
     end
 end)
 
-
-
 local WalkOnWaterEnabled = false
 local WaterPlatform = nil
 local WalkConnection = nil
@@ -1182,11 +1354,12 @@ task.spawn(function()
     for i, v in pairs(getconnections(Players.LocalPlayer.Idled)) do
         if v.Disable then v:Disable() end
     end
-    print("XAL: Anti-AFK Active")
+    print("Script Aktif cuuy")
 end)
 
-CreateToggle(Page_Setting, "Walk On Water", false, function(state)
+CreateToggle(Page_Setting, "Walk On Water", "WalkOnWaterEnabled", function(state)
     WalkOnWaterEnabled = state
+    Settings.WalkOnWaterEnabled = state
     if state then
         if not WaterPlatform then
              WaterPlatform = Instance.new("Part")
@@ -1410,7 +1583,7 @@ local function RefreshConfigList()
     selectedConfig = nil
     LoadBtn.BackgroundColor3 = Theme.Input 
     
-    local success, files = pcall(function() return listfiles("Rio_Configs") end)
+    local success, files = pcall(function() return listfiles("RioSIX_Configs") end)
     if not success or not files then files = {} end
 
     for _, file in pairs(files) do
@@ -1437,25 +1610,34 @@ local function RefreshConfigList()
 end
 
 local function LoadConfig(configName)
-    local success, content = pcall(function() return readfile("Rio_Configs/" .. configName .. ".json") end)
-    if not success then ShowNotification("Read Failed!", true) return false end
+    print("[LoadConfig] Starting load:", configName)
+    
+    local success, content = pcall(function() return readfile("RioSIX_Configs/" .. configName .. ".json") end)
+    if not success then 
+        print("[LoadConfig] ✗ Read failed")
+        ShowNotification("Read Failed!", true) 
+        return false 
+    end
 
     local decodeSuccess, data = pcall(function() return HttpService:JSONDecode(content) end)
-    
+
     if decodeSuccess and data then
+        print("[LoadConfig] ✓ JSON decoded")
+        
         if data.Webhooks then
             Current_Webhook_Fish = data.Webhooks.Fish or ""
             Current_Webhook_Leave = data.Webhooks.Leave or ""
             Current_Webhook_List = data.Webhooks.List or ""
-            
+
             if UI_FishInput then UI_FishInput.Text = Current_Webhook_Fish end
             if UI_LeaveInput then UI_LeaveInput.Text = Current_Webhook_Leave end
             if UI_ListInput then UI_ListInput.Text = Current_Webhook_List end
-            
+
             Current_Webhook_Admin = data.Webhooks.Admin or ""
             if UI_AdminInput then UI_AdminInput.Text = Current_Webhook_Admin end
+            print("[LoadConfig] ✓ Webhooks loaded")
         end
-                
+
         if data.Players then
             TagList = data.Players
             for i = 1, 20 do
@@ -1469,22 +1651,59 @@ local function LoadConfig(configName)
                     end
                 end
             end
+            print("[LoadConfig] ✓ Players loaded")
         end
 
         if data.Settings then
+            print("[LoadConfig] Loading settings...")
+            local loadedCount = 0
             for k, v in pairs(data.Settings) do
                 if Settings[k] ~= nil then
                     Settings[k] = v
+                    print("[LoadConfig]   Set", k, "=", v)
                     if ToggleRegistry[k] then
                         ToggleRegistry[k](v)
+                        print("[LoadConfig]   ✓ ToggleRegistry called for", k)
+                        loadedCount = loadedCount + 1
+                    else
+                        print("[LoadConfig]   ⚠ No ToggleRegistry for", k)
                     end
+                else
+                    print("[LoadConfig]   ⚠ Unknown setting:", k)
                 end
+            end
+            print("[LoadConfig] ✓ Settings loaded:", loadedCount, "toggles updated")
+
+            -- Update input fields
+            if UI_CompleteDelayInput then 
+                UI_CompleteDelayInput.Text = tostring(Settings.InstantFishingCompleteDelay or "0.7") 
+                print("[LoadConfig] ✓ CompleteDelay input updated")
+            end
+            if UI_CastDelayInput then 
+                UI_CastDelayInput.Text = tostring(Settings.InstantFishingCastDelay or "0.1") 
+                print("[LoadConfig] ✓ CastDelay input updated")
+            end
+            if UI_ClaimAmountInput then 
+                UI_ClaimAmountInput.Text = tostring(Settings.InstantFishingClaimAmount or "3") 
+                print("[LoadConfig] ✓ ClaimAmount input updated")
+            end
+            if UI_AutoSellThresholdInput then 
+                UI_AutoSellThresholdInput.Text = tostring(Settings.AutoSellThreshold or "600") 
+                print("[LoadConfig] ✓ AutoSellThreshold input updated")
+            end
+
+            -- Update Selected Totem
+            if Settings.SelectedTotem then
+                SelectedTotem = Settings.SelectedTotem
+                print("[LoadConfig] ✓ SelectedTotem updated:", SelectedTotem)
             end
         end
 
         ShowNotification("Config Loaded!", false)
+        print("[LoadConfig] ✓✓✓ CONFIG LOAD COMPLETE ✓✓✓")
         return true
     else
+        print("[LoadConfig] ✗ JSON decode failed")
         ShowNotification("JSON Error!", true)
         return false
     end
@@ -1493,12 +1712,15 @@ end
 SaveBtn.MouseButton1Click:Connect(function()
     local name = SaveInput.Text
     if name == "" then ShowNotification("Name cannot be empty!", true) return end
-    
+
     local validKeys = {
-        "SecretEnabled", "RubyEnabled", "MutationCrystalized", "CaveCrystalEnabled", 
-        "LeaveEnabled", "PlayerNonPSAuto", "ForeignDetection", "SpoilerName", 
-        "PingMonitor", "AutoExecute", "NoAnimation", "RemoveVFX", "DisablePopups", 
-        "EvolvedEnabled"
+        "SecretEnabled", "RubyEnabled", "MutationCrystalized", "CaveCrystalEnabled",
+        "LeaveEnabled", "PlayerNonPSAuto", "ForeignDetection", "SpoilerName",
+        "PingMonitor", "AutoExecute", "NoAnimation", "RemoveVFX", "DisablePopups",
+        "EvolvedEnabled", "InstantFishingEnabled", "InstantFishingCompleteDelay",
+        "InstantFishingCastDelay", "InstantFishingClaimAmount", "AutoSellThreshold",
+        "AutoSellEnabled", "AutoWeatherEnabled", "AutoTotemEnabled", "SelectedTotem",
+        "DetectorStuckEnabled", "StuckThreshold", "AutoClickFishingEnabled", "WalkOnWaterEnabled"
     }
     
     local cleanSettings = {}
@@ -1541,7 +1763,7 @@ SaveBtn.MouseButton1Click:Connect(function()
         if not isfolder("RioSIX_Configs") then makefolder("RioSIX_Configs") end
         writefile("RioSIX_Configs/" .. name .. ".json", encodedData)
     end)
-    
+
     if success then
         ShowNotification("Config Saved!", false)
         RefreshConfigList()
@@ -1563,70 +1785,6 @@ DeleteBtn.MouseButton1Click:Connect(function()
     RefreshConfigList()
 end)
 
-local AutoLoadToggle = nil
-local AutoLoadConfigPath = "RioSIX_Configs/autoload.json"
-local currentAutoLoad = nil
-
-local function SaveAutoLoadPref(configName, enabled)
-    local data = { config = configName, enabled = enabled }
-    writefile(AutoLoadConfigPath, HttpService:JSONEncode(data))
-    currentAutoLoad = enabled and configName or nil
-end
-
-local function GetAutoLoadPref()
-    if isfile(AutoLoadConfigPath) then
-        local s, c = pcall(function() return readfile(AutoLoadConfigPath) end)
-        if s then
-            local s2, d = pcall(function() return HttpService:JSONDecode(c) end)
-            if s2 and d then return d end
-        end
-    end
-    return nil
-end
-
-local AutoLoadWrapper = Instance.new("Frame", Page_Save)
-AutoLoadWrapper.BackgroundTransparency = 1; AutoLoadWrapper.Size = UDim2.new(1, -5, 0, 30)
-AutoLoadWrapper.LayoutOrder = 5
-
-local AutoLoadBtn = Instance.new("TextButton", AutoLoadWrapper)
-AutoLoadBtn.BackgroundColor3 = Theme.Input
-AutoLoadBtn.Size = UDim2.new(1, 0, 1, 0)
-AutoLoadBtn.Font = Enum.Font.GothamBold
-AutoLoadBtn.Text = "SET AS AUTOLOAD"
-AutoLoadBtn.TextColor3 = Theme.TextSecondary
-AutoLoadBtn.TextSize = 11
-Instance.new("UICorner", AutoLoadBtn).CornerRadius = UDim.new(0, 6)
-AddStroke(AutoLoadBtn, Theme.Border, 1)
-
-local function UpdateAutoLoadBtnState()
-    local pref = GetAutoLoadPref()
-    if pref and pref.enabled and pref.config == selectedConfig then
-        AutoLoadBtn.BackgroundColor3 = Theme.Success
-        AutoLoadBtn.TextColor3 = Color3.new(1,1,1)
-        AutoLoadBtn.Text = "AUTOLOAD ACTIVE"
-    else
-        AutoLoadBtn.BackgroundColor3 = Theme.Input
-        AutoLoadBtn.TextColor3 = Theme.TextSecondary
-        AutoLoadBtn.Text = "SET AS AUTOLOAD"
-    end
-end
-
-AutoLoadBtn.MouseButton1Click:Connect(function()
-    if not selectedConfig then ShowNotification("Select a config first!", true) return end
-    
-    local pref = GetAutoLoadPref()
-    local isCurrentlyEnabled = (pref and pref.enabled and pref.config == selectedConfig)
-    
-    if isCurrentlyEnabled then
-        SaveAutoLoadPref(selectedConfig, false)
-        ShowNotification("Autoload Disabled", false)
-    else
-        SaveAutoLoadPref(selectedConfig, true)
-        ShowNotification("Autoload Set: " .. selectedConfig, false)
-    end
-    UpdateAutoLoadBtnState()
-end)
-
 local originalRefresh = RefreshConfigList
 RefreshConfigList = function()
     for _, v in pairs(ConfigList:GetChildren()) do
@@ -1634,35 +1792,30 @@ RefreshConfigList = function()
     end
     selectedConfig = nil
     LoadBtn.BackgroundColor3 = Theme.Input
-    UpdateAutoLoadBtnState()
-    
-    local success, files = pcall(function() return listfiles("Rio_Configs") end)
+
+    local success, files = pcall(function() return listfiles("RioSIX_Configs") end)
     if not success or not files then files = {} end
 
     for _, file in pairs(files) do
         local name = file:match("([^/\\]+)$") or file
-        
-        if name ~= "autoload.json" then 
-            name = name:gsub("%.json$", "")
-            
-            local Btn = Instance.new("TextButton", ConfigList)
-            Btn.BackgroundColor3 = Theme.Background
-            Btn.Size = UDim2.new(1, -8, 0, 24); Btn.Font = Enum.Font.GothamMedium
-            Btn.Text = "  " .. name; Btn.TextColor3 = Theme.TextSecondary
-            Btn.TextSize = 11; Btn.TextXAlignment = "Left"
-            Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 4)
-            
-            Btn.MouseButton1Click:Connect(function()
-                for _, b in pairs(ConfigList:GetChildren()) do
-                    if b:IsA("TextButton") then b.BackgroundColor3 = Theme.Background; b.TextColor3 = Theme.TextSecondary end
-                end
-                Btn.BackgroundColor3 = Theme.Accent
-                Btn.TextColor3 = Color3.new(1, 1, 1)
-                selectedConfig = name
-                LoadBtn.BackgroundColor3 = Theme.Success 
-                UpdateAutoLoadBtnState()
-            end)
-        end
+        name = name:gsub("%.json$", "")
+
+        local Btn = Instance.new("TextButton", ConfigList)
+        Btn.BackgroundColor3 = Theme.Background
+        Btn.Size = UDim2.new(1, -8, 0, 24); Btn.Font = Enum.Font.GothamMedium
+        Btn.Text = "  " .. name; Btn.TextColor3 = Theme.TextSecondary
+        Btn.TextSize = 11; Btn.TextXAlignment = "Left"
+        Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 4)
+
+        Btn.MouseButton1Click:Connect(function()
+            for _, b in pairs(ConfigList:GetChildren()) do
+                if b:IsA("TextButton") then b.BackgroundColor3 = Theme.Background; b.TextColor3 = Theme.TextSecondary end
+            end
+            Btn.BackgroundColor3 = Theme.Accent
+            Btn.TextColor3 = Color3.new(1, 1, 1)
+            selectedConfig = name
+            LoadBtn.BackgroundColor3 = Theme.Success
+        end)
     end
 end
 
@@ -1743,19 +1896,15 @@ local function TestWebhook(url, name)
         local success, response = pcall(function()
             return httpRequest({ Url = url, Method = "POST", Headers = {["Content-Type"]="application/json"}, Body = HttpService:JSONEncode(p) })
         end)
-        
+
         if success and response then
             local status = response.StatusCode or "Unknown"
-            local body = response.Body or "No Body"
-            
             if status and (status < 200 or status >= 300) then
-                ShowAlert("Webhook Failed: " .. status, "Response Body:\n" .. string.sub(tostring(body), 1, 500))
                 ShowNotification("Failed: " .. status, true)
             else
                 ShowNotification("Success: " .. status, false)
             end
         else
-            ShowAlert("Request Error", "Error: " .. tostring(response))
             ShowNotification("Request Error!", true)
         end
     end)
@@ -2137,39 +2286,30 @@ task.spawn(function()
     end
 end)
 
-local IconPath = "Rio_Script.jpg"
-local IconUrl = "https://i.imgur.com/Z92uLfK.jpeg"
-local RealIconAsset = ""
-
-if not isfile(IconPath) then
-    local success, response = pcall(function()
-        return httpRequest({Url = IconUrl, Method = "GET"})
-    end)
-    if success and response.Body then
-        writefile(IconPath, response.Body)
-    end
-end
-
-if isfile(IconPath) and (getcustomasset or getsynasset) then
-    RealIconAsset = (getcustomasset or getsynasset)(IconPath)
-end
-
-if RealIconAsset == "" then RealIconAsset = "rbxassetid://0" end 
-
-local OpenBtn = Instance.new("ImageButton", ScreenGui) 
+-- Icon Button (Logo Only - No Background)
+local OpenBtn = Instance.new("ImageButton", ScreenGui)
 OpenBtn.Name = "OpenBtn"
-OpenBtn.BackgroundColor3 = Theme.Background
-OpenBtn.Size = UDim2.new(0, 40, 0, 40) 
-OpenBtn.Position = UDim2.new(0, 22, 0, 75) 
-OpenBtn.Image = RealIconAsset 
+OpenBtn.BackgroundColor3 = Color3.fromRGB(0,0,0)
+OpenBtn.BackgroundTransparency = 1
+OpenBtn.BorderSizePixel = 0
+OpenBtn.Size = UDim2.new(0, 40, 0, 40)
+OpenBtn.Position = UDim2.new(0, 22, 0, 75)
+OpenBtn.Image = "rbxassetid://82148170615791"
+OpenBtn.ImageTransparency = 0
 OpenBtn.Visible = true
 OpenBtn.Active = true
 OpenBtn.Draggable = true
-OpenBtn.ScaleType = Enum.ScaleType.Fit 
+OpenBtn.ScaleType = Enum.ScaleType.Slice
+OpenBtn.SliceCenter = Rect.new(0,0,0,0)
 OpenBtn.SliceScale = 1
 
-Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 8)
-AddStroke(OpenBtn, Theme.Border, 1)
+-- Hover effect (optional)
+OpenBtn.MouseEnter:Connect(function()
+    OpenBtn.ImageTransparency = 0.2
+end)
+OpenBtn.MouseLeave:Connect(function()
+    OpenBtn.ImageTransparency = 0
+end)
 
 OpenBtn.MouseButton1Click:Connect(function()
      MainFrame.Visible = not MainFrame.Visible
@@ -2216,7 +2356,7 @@ SendStatsBtn.TextColor3 = Color3.new(1, 1, 1)
 SendStatsBtn.TextSize = 11
 Instance.new("UICorner", SendStatsBtn).CornerRadius = UDim.new(0, 6)
 
-local ServerTitle = "XALSCENT"
+local ServerTitle = "RioSIX"
 CreateInput(Page_SessionStats, "Server Title", ServerTitle, function(v) ServerTitle = v end)
 CreateStatItem(Page_SessionStats, "Secret Fish Caught", "Secret")
 CreateStatItem(Page_SessionStats, "Ruby Gemstones", "Ruby")
@@ -2331,7 +2471,15 @@ local function ParseDataSmart(cleanMsg)
                 break
             end
         end
-        return { Player = p, Item = finalItem, Mutation = mutation, Weight = w }
+        -- Get sell price from SecretFishPrices table
+        local sellPrice = "440,000"
+        for fishName, price in pairs(SecretFishPrices) do
+            if string.find(string.lower(finalItem), string.lower(fishName)) then
+                sellPrice = price
+                break
+            end
+        end
+        return { Player = p, Item = finalItem, Mutation = mutation, Weight = w, SellPrice = sellPrice }
     end
     return nil
 end
@@ -2350,14 +2498,38 @@ local function SendWebhook(data, category)
     if discordId and discordId ~= "" then if category == "LEAVE" then contentMsg = "User Left: <@" .. discordId .. ">" else contentMsg = "GG! <@" .. discordId .. ">" end end
     if category == "LEAVE" then TargetURL = Current_Webhook_Leave elseif category == "PLAYERS" then TargetURL = Current_Webhook_List else TargetURL = Current_Webhook_Fish end
     if not TargetURL or TargetURL == "" or string.find(TargetURL, "MASUKKAN_URL") then return end
-    local embedTitle = ""; local embedColor = 3447003; local descriptionText = "" 
-    local pName = Settings.SpoilerName and ("||`" .. data.Player .. "`||") or ("`" .. data.Player .. "`") 
+    local embedTitle = ""; local embedColor = 3447003; local descriptionText = ""
+    local pName = Settings.SpoilerName and ("||`" .. data.Player .. "`||") or ("`" .. data.Player .. "`")
     if category == "SECRET" then
         SessionStats.Secret = SessionStats.Secret + 1
-        embedTitle = "Secret Caught!"
-        embedColor = 3447003; local lines = { "⚓ Fish: " .. data.Item }
-        if data.Mutation and data.Mutation ~= "None" then table.insert(lines, "🧬 Mutation: " .. data.Mutation) end
-        table.insert(lines, "⚖️ Weight: " .. data.Weight); descriptionText = "Player: " .. pName .. "\n\n```\n" .. table.concat(lines, "\n") .. "\n```"
+        embedTitle = "🎣 New Fish Caught!"
+        embedColor = 12337389
+        contentMsg = "@everyone"
+
+        local fishName = data.Item or "Unknown"
+        local mutation = data.Mutation or "None"
+        local weight = data.Weight or "N/A"
+        local sellPrice = data.SellPrice or "Unknown"
+        local currentCoins = "0"
+
+        -- Get current coins from leaderstats
+        pcall(function()
+            local player = Players.LocalPlayer
+            if player then
+                local leaderstats = player:FindFirstChild("leaderstats")
+                if leaderstats then
+                    local coinsStat = leaderstats:FindFirstChild("Coins") or leaderstats:FindFirstChild("Cash") or leaderstats:FindFirstChild("Money")
+                    if coinsStat then
+                        currentCoins = string.format("%d", coinsStat.Value):gsub("(%d)(%d%d%d)$", "%1,%2")
+                    end
+                end
+            end
+        end)
+
+        descriptionText = "**User**\n" .. pName .. "\n\n**Fish Name**\n" .. fishName .. "\n\n**Rarity** ⋅ **Tier** ⋅ **Weight**\nSECRET ⋅ 7 ⋅ " .. weight .. "\n\n**Mutation** ⋅ **Sell Price**\n" .. mutation .. " ⋅ " .. sellPrice .. " Coins"
+
+        local currentTime = os.date("%d %B %Y, %H:%M:%S")
+        descriptionText = descriptionText .. "\n\nCurrent Coins: " .. currentCoins .. " | " .. currentTime
     elseif category == "STONE" then
         SessionStats.Ruby = SessionStats.Ruby + 1
         embedTitle = "Ruby Gemstone!"
@@ -2394,8 +2566,15 @@ local function SendWebhook(data, category)
     if UI_StatsLabels["Evolved"] then UI_StatsLabels["Evolved"].Text = tostring(SessionStats.Evolved) end
     if UI_StatsLabels["Crystalized"] then UI_StatsLabels["Crystalized"].Text = tostring(SessionStats.Crystalized) end
     if UI_StatsLabels["CaveCrystal"] then UI_StatsLabels["CaveCrystal"].Text = tostring(SessionStats.CaveCrystal) end
-    
-    local embedData = { ["username"] = "RioSIX", ["avatar_url"] = "https://i.imgur.com/CWWGnhO.jpeg", ["content"] = contentMsg, ["embeds"] = {{ ["title"] = embedTitle, ["description"] = descriptionText, ["color"] = embedColor, ["footer"] = { ["text"] = "RioSIX Webhook", ["icon_url"] = "https://i.imgur.com/CWWGnhO.jpeg" } }} }
+
+    local embedTable = { ["title"] = embedTitle, ["description"] = descriptionText, ["color"] = embedColor, ["footer"] = { ["text"] = "RioSIX Webhook", ["icon_url"] = "https://i.imgur.com/CWWGnhO.jpeg" } }
+
+    if category == "SECRET" then
+        embedTable["thumbnail"] = { ["url"] = "https://i.imgur.com/CWWGnhO.jpeg" }
+        embedTable["footer"] = { ["text"] = "RioSIX Webhook" }
+    end
+
+    local embedData = { ["username"] = "RioSIX", ["avatar_url"] = "https://i.imgur.com/CWWGnhO.jpeg", ["content"] = contentMsg, ["embeds"] = {embedTable} }
     pcall(function() httpRequest({ Url = TargetURL, Method = "POST", Headers = { ["Content-Type"] = "application/json" }, Body = HttpService:JSONEncode(embedData) }) end)
 end
 
@@ -2475,11 +2654,16 @@ local function CheckAndSend(msg)
     end
 end
 
-if TextChatService then 
-    TextChatService.OnIncomingMessage = function(m) 
+if TextChatService then
+    TextChatService.OnIncomingMessage = function(m)
         if not ScriptActive then return end
-        if m.TextSource == nil then CheckAndSend(m.Text) end 
-    end 
+        if m.TextSource == nil then
+            local channel = m.TextChannel
+            if channel and (channel.Name == "RBXGeneral" or channel.Name == "General") then
+                CheckAndSend(m.Text)
+            end
+        end
+    end
 end
 
 local ChatEvents = ReplicatedStorage:WaitForChild("DefaultChatSystemChatEvents", 3)
@@ -2627,7 +2811,7 @@ if promptOverlay then
         end 
     end))
 end
-    
+
 game:BindToClose(function()
     SendDisconnectWebhook("Script/Game Closed Gracefully")
     task.wait(1)
@@ -2650,12 +2834,4 @@ local function StartInventoryWatcher()
 end
 task.spawn(StartInventoryWatcher)
 
-print("RioSIX Beta Loaded")
-
-task.delay(1, function()
-    local autoPref = GetAutoLoadPref()
-    if autoPref and autoPref.enabled and autoPref.config then
-        print("🔄 Autoloading Config: " .. autoPref.config)
-        LoadConfig(autoPref.config)
-    end
-end)
+print("✅ RioSIX System Session v1.0 Loaded!")
