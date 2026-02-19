@@ -897,6 +897,34 @@ local function getFishCount()
     return 0
 end
 
+-- Auto Equip Rod (otomatis equip rod slot 1 setiap loop)
+local AutoEquipRodEnabled = false
+
+CreateToggle(Page_Fhising, "Auto Equip Rod", false, function(state)
+    AutoEquipRodEnabled = state
+    if state then
+        task.spawn(function()
+            while AutoEquipRodEnabled and ScriptActive do
+                pcall(function()
+                    -- Equip rod di slot 1
+                    local RE_Equip = GetRemote("RE/EquipToolFromHotbar")
+                    if RE_Equip then
+                        RE_Equip:FireServer(1)  -- 1 = slot pertama (rod)
+                        -- Optional: print debug kalau mau cek
+                        -- print("Auto Equip Rod: Rod equipped (slot 1)")
+                    else
+                        ShowNotification("Remote Equip Not Found!", true)
+                    end
+                end)
+                task.wait(4)  -- equip ulang setiap 4 detik (aman, ga spam server)
+            end
+        end)
+        ShowNotification("Auto Equip Rod ON", false)
+    else
+        ShowNotification("Auto Equip Rod OFF", false)
+    end
+end)
+
 local DetectorStuckEnabled = false
 local StuckThreshold = 15
 local LastFishCount = 0
@@ -1063,6 +1091,8 @@ CreateToggle(Page_Fhising, "Enable Auto Spawn Totem", false, function(state)
         end)
     end
 end)
+
+
 
 local WalkOnWaterEnabled = false
 local WaterPlatform = nil
