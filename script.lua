@@ -604,7 +604,7 @@ local Page_Tag = CreatePage("TagDiscord")
 local Page_AdminBoost = CreatePage("AdminBoost")
 local Page_SessionStats = CreatePage("SessionStats")
 local Page_Fhising = CreatePage("Fhising")
-local Page_Setting
+local Page_Shop = CreatePage("Shop")
 
 Page_Webhook.Visible = false
 
@@ -666,6 +666,55 @@ end
 
 CreateTab("Server Info", Page_SessionStats, true)
 CreateTab("Fhising", Page_Fhising)
+
+-- Tambah Tab Shop
+local Page_Shop = CreatePage("Shop")
+CreateTab("Shop", Page_Shop)
+
+-- Isi Shop sederhana
+local ShopTitle = Instance.new("TextLabel", Page_Shop)
+ShopTitle.BackgroundTransparency = 1
+ShopTitle.Size = UDim2.new(1, 0, 0, 40)
+ShopTitle.Font = Enum.Font.GothamBlack
+ShopTitle.Text = "RIO SIX SHOP"
+ShopTitle.TextColor3 = Theme.Accent
+ShopTitle.TextSize = 18
+ShopTitle.TextXAlignment = Enum.TextXAlignment.Center
+
+local function CreateShopCategory(name)
+    local CatFrame = Instance.new("Frame", Page_Shop)
+    CatFrame.BackgroundColor3 = Theme.Content
+    CatFrame.Size = UDim2.new(1, -10, 0, 180)
+    CatFrame.BorderSizePixel = 0
+    Instance.new("UICorner", CatFrame).CornerRadius = UDim.new(0, 8)
+    local stroke = Instance.new("UIStroke", CatFrame)
+    stroke.Color = Theme.Border
+    stroke.Thickness = 1
+
+    local CatLabel = Instance.new("TextLabel", CatFrame)
+    CatLabel.BackgroundTransparency = 1
+    CatLabel.Size = UDim2.new(1, 0, 0, 30)
+    CatLabel.Font = Enum.Font.GothamBold
+    CatLabel.Text = name
+    CatLabel.TextColor3 = Theme.AccentHover
+    CatLabel.TextSize = 16
+    CatLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+    local Placeholder = Instance.new("TextLabel", CatFrame)
+    Placeholder.BackgroundTransparency = 1
+    Placeholder.Size = UDim2.new(1, -20, 1, -50)
+    Placeholder.Position = UDim2.new(0, 10, 0, 40)
+    Placeholder.Font = Enum.Font.GothamMedium
+    Placeholder.Text = "Fitur " .. name .. " (Auto Buy / Preview / Toggle)\nComing soon / Customize di sini"
+    Placeholder.TextColor3 = Theme.TextSecondary
+    Placeholder.TextSize = 13
+    Placeholder.TextWrapped = true
+end
+
+CreateShopCategory("Merchant")
+CreateShopCategory("Charm")
+CreateShopCategory("Bobber")
+CreateShopCategory("Rod")
 
 local Page_Teleport = CreatePage("Teleport")
 
