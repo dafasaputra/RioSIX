@@ -711,11 +711,16 @@ local function CreateShopCategory(name)
     Placeholder.TextWrapped = true
 end
 
--- Merchant khusus (tanpa placeholder lama, langsung tombol)
+CreateShopCategory("Merchant")
+CreateShopCategory("Charm")
+CreateShopCategory("Bobber")
+CreateShopCategory("Rod")
+
+-- Merchant manual (biar pasti muncul, tanpa ganti fungsi lama)
 local MerchantFrame = Instance.new("Frame", Page_Shop)
+MerchantFrame.Name = "MerchantCategory"
 MerchantFrame.BackgroundColor3 = Theme.Content
 MerchantFrame.Size = UDim2.new(1, -10, 0, 220)
-MerchantFrame.Position = UDim2.new(0, 5, 0, 50)  -- posisi manual di atas Charm kalau perlu
 MerchantFrame.BorderSizePixel = 0
 Instance.new("UICorner", MerchantFrame).CornerRadius = UDim.new(0, 8)
 local stroke = Instance.new("UIStroke", MerchantFrame)
@@ -745,11 +750,13 @@ AddStroke(OpenBtn, Theme.AccentHover, 2)
 
 OpenBtn.MouseButton1Click:Connect(function()
     pcall(function()
+        -- Cancel Crafting dulu
         local RF_Cancel = GetRemote("RF/CancelCrafting")
         if RF_Cancel then RF_Cancel:InvokeServer() end
         
         task.wait(0.1)
         
+        -- Dialogue Ended buka shop
         local RE_Dialogue = GetRemote("RE/DialogueEnded")
         if RE_Dialogue then RE_Dialogue:FireServer("Alien Merchant", 1, 1) end
         
@@ -759,20 +766,16 @@ OpenBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
--- Label info
+-- Info label
 local InfoLabel = Instance.new("TextLabel", MerchantFrame)
-InfoLabel.Size = UDim2.new(1, 0, 0, 30)
+InfoLabel.Size = UDim2.new(1, -20, 0, 60)
 InfoLabel.Position = UDim2.new(0, 10, 0, 100)
 InfoLabel.BackgroundTransparency = 1
 InfoLabel.Font = Enum.Font.GothamMedium
-InfoLabel.Text = "Klik tombol di atas → shop langsung terbuka tanpa ke NPC"
+InfoLabel.Text = "Klik tombol di atas → shop langsung terbuka tanpa ke NPC!\n(Tanpa perlu dialogue)"
 InfoLabel.TextColor3 = Theme.TextSecondary
 InfoLabel.TextSize = 12
 InfoLabel.TextWrapped = true
-
-CreateShopCategory("Charm")
-CreateShopCategory("Bobber")
-CreateShopCategory("Rod")
 
 local Page_Teleport = CreatePage("Teleport")
 
