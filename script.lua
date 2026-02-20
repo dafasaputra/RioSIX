@@ -766,17 +766,6 @@ OpenBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
--- Info label
-local InfoLabel = Instance.new("TextLabel", MerchantFrame)
-InfoLabel.Size = UDim2.new(1, -20, 0, 60)
-InfoLabel.Position = UDim2.new(0, 10, 0, 100)
-InfoLabel.BackgroundTransparency = 1
-InfoLabel.Font = Enum.Font.GothamMedium
-InfoLabel.Text = "Klik tombol di atas → shop langsung terbuka tanpa ke NPC!\n(Tanpa perlu dialogue)"
-InfoLabel.TextColor3 = Theme.TextSecondary
-InfoLabel.TextSize = 12
-InfoLabel.TextWrapped = true
-
 local Page_Teleport = CreatePage("Teleport")
 
 
