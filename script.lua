@@ -748,53 +748,44 @@ Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 8)
 AddStroke(OpenBtn, Theme.AccentHover, 2)
 
 OpenBtn.MouseButton1Click:Connect(function()
-    print("[DEBUG] Tombol Merchant diklik!")
-    ShowNotification("[DEBUG] Tombol diklik, mulai buka shop...", false)
+    print("[Merchant] Tombol diklik!")
+    ShowNotification("[Merchant] Mulai buka Alien Merchant...", false)
     
     pcall(function()
-        -- 1. Path full RF/CancelCrafting (dari yang lu kasih)
-        local RF_Cancel = game:GetService("ReplicatedStorage")
-            :WaitForChild("Packages")
-            :WaitForChild("_Index")
-            :WaitForChild("sleitnick_net@0.2.0")
-            :WaitForChild("net")
-            :WaitForChild("RF/CancelCrafting")
+        -- 1. CancelCrafting dulu (cleanup, dari nomor 1 lu)
+        local RS = game:GetService("ReplicatedStorage")
+        local Packages = RS:WaitForChild("Packages")
+        local Index = Packages:WaitForChild("_Index")
+        local Sleitnick = Index:WaitForChild("sleitnick_net@0.2.0")
+        local Net = Sleitnick:WaitForChild("net")
         
+        local RF_Cancel = Net:WaitForChild("RF/CancelCrafting")
         if RF_Cancel then
-            print("[DEBUG] CancelCrafting ditemukan")
             RF_Cancel:InvokeServer()
-            ShowNotification("CancelCrafting OK", false)
+            print("[Merchant] CancelCrafting OK")
         else
-            print("[ERROR] RF/CancelCrafting GA KETEMU!")
+            print("[Merchant] CancelCrafting GA KETEMU!")
             ShowNotification("ERROR: CancelCrafting ga ketemu!", true)
             return
         end
         
         task.wait(0.2)
         
-        -- 2. Path full RE/DialogueEnded (dari yang lu kasih)
-        local RE_Dialogue = game:GetService("ReplicatedStorage")
-            :WaitForChild("Packages")
-            :WaitForChild("_Index")
-            :WaitForChild("sleitnick_net@0.2.0")
-            :WaitForChild("net")
-            :WaitForChild("RE/DialogueEnded")
-        
+        -- 2. DialogueEnded (kode lu nomor 2, langsung pakai path full)
+        local RE_Dialogue = Net:WaitForChild("RE/DialogueEnded")
         if RE_Dialogue then
-            print("[DEBUG] DialogueEnded ditemukan, FireServer...")
             local args = { "Alien Merchant", 1, 1 }
             RE_Dialogue:FireServer(unpack(args))
-            ShowNotification("DialogueEnded OK, shop seharusnya muncul", false)
+            print("[Merchant] DialogueEnded fired! Shop seharusnya muncul")
+            ShowNotification("DialogueEnded OK, cek shop muncul ga", false)
         else
-            print("[ERROR] RE/DialogueEnded GA KETEMU!")
+            print("[Merchant] DialogueEnded GA KETEMU!")
             ShowNotification("ERROR: DialogueEnded ga ketemu!", true)
             return
         end
         
-        task.wait(0.6)  -- kasih waktu GUI muncul
-        
-        print("[DEBUG] Proses buka shop selesai")
-        ShowNotification("🛒 Alien Merchant Shop dibuka! Cek GUI merchant", false)
+        task.wait(0.8)
+        ShowNotification("🛒 Proses selesai! Cek layar merchant", false)
     end)
 end)
 
