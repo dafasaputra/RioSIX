@@ -711,8 +711,6 @@ local function CreateShopCategory(name)
     Placeholder.TextWrapped = true
 end
 
-CreateShopCategory("Merchant")
-
 -- Di dalam CreateShopCategory("Merchant") - ganti placeholder TextLabel lama dengan ini
 local MerchantBtnContainer = Instance.new("Frame", CatFrame)
 MerchantBtnContainer.Size = UDim2.new(1, -20, 1, -40)
