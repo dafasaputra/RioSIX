@@ -711,52 +711,61 @@ local function CreateShopCategory(name)
     Placeholder.TextWrapped = true
 end
 
--- Di dalam CreateShopCategory("Merchant") - ganti placeholder TextLabel lama dengan ini
-local MerchantBtnContainer = Instance.new("Frame", CatFrame)
-MerchantBtnContainer.Size = UDim2.new(1, -20, 1, -40)
-MerchantBtnContainer.Position = UDim2.new(0, 10, 0, 40)
-MerchantBtnContainer.BackgroundTransparency = 1
+-- Merchant khusus (tanpa placeholder lama, langsung tombol)
+local MerchantFrame = Instance.new("Frame", Page_Shop)
+MerchantFrame.BackgroundColor3 = Theme.Content
+MerchantFrame.Size = UDim2.new(1, -10, 0, 220)
+MerchantFrame.Position = UDim2.new(0, 5, 0, 50)  -- posisi manual di atas Charm kalau perlu
+MerchantFrame.BorderSizePixel = 0
+Instance.new("UICorner", MerchantFrame).CornerRadius = UDim.new(0, 8)
+local stroke = Instance.new("UIStroke", MerchantFrame)
+stroke.Color = Theme.Border
+stroke.Thickness = 1
 
--- Tombol Open Alien Merchant Shop Instan
-local OpenMerchantBtn = Instance.new("TextButton", MerchantBtnContainer)
-OpenMerchantBtn.Size = UDim2.new(1, 0, 0, 45)
-OpenMerchantBtn.BackgroundColor3 = Theme.Accent
-OpenMerchantBtn.Text = "🛒 Open Alien Merchant (Instant)"
-OpenMerchantBtn.TextColor3 = Color3.new(1,1,1)
-OpenMerchantBtn.Font = Enum.Font.GothamBold
-OpenMerchantBtn.TextSize = 14
-Instance.new("UICorner", OpenMerchantBtn).CornerRadius = UDim.new(0, 8)
-AddStroke(OpenMerchantBtn, Theme.AccentHover, 2)
+local MerchantLabel = Instance.new("TextLabel", MerchantFrame)
+MerchantLabel.BackgroundTransparency = 1
+MerchantLabel.Size = UDim2.new(1, 0, 0, 30)
+MerchantLabel.Font = Enum.Font.GothamBold
+MerchantLabel.Text = "Merchant"
+MerchantLabel.TextColor3 = Theme.AccentHover
+MerchantLabel.TextSize = 16
+MerchantLabel.TextXAlignment = Enum.TextXAlignment.Center
 
-OpenMerchantBtn.MouseButton1Click:Connect(function()
+-- Tombol Open Alien Merchant Instan
+local OpenBtn = Instance.new("TextButton", MerchantFrame)
+OpenBtn.Size = UDim2.new(1, -20, 0, 50)
+OpenBtn.Position = UDim2.new(0, 10, 0, 40)
+OpenBtn.BackgroundColor3 = Theme.Accent
+OpenBtn.Text = "🛒 Open Alien Merchant (Instant)"
+OpenBtn.TextColor3 = Color3.new(1,1,1)
+OpenBtn.Font = Enum.Font.GothamBold
+OpenBtn.TextSize = 14
+Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 8)
+AddStroke(OpenBtn, Theme.AccentHover, 2)
+
+OpenBtn.MouseButton1Click:Connect(function()
     pcall(function()
-        -- 1. Cancel Crafting dulu (cleanup)
         local RF_Cancel = GetRemote("RF/CancelCrafting")
-        if RF_Cancel then
-            RF_Cancel:InvokeServer()  -- tanpa args
-        end
+        if RF_Cancel then RF_Cancel:InvokeServer() end
         
-        task.wait(0.1)  -- delay kecil
+        task.wait(0.1)
         
-        -- 2. Dialogue Ended (buka shop)
         local RE_Dialogue = GetRemote("RE/DialogueEnded")
-        if RE_Dialogue then
-            RE_Dialogue:FireServer("Alien Merchant", 1, 1)
-        end
+        if RE_Dialogue then RE_Dialogue:FireServer("Alien Merchant", 1, 1) end
         
-        task.wait(0.5)  -- tunggu shop GUI muncul
+        task.wait(0.4)
         
         ShowNotification("🛒 Alien Merchant Shop dibuka!", false)
     end)
 end)
 
--- Label info (opsional, biar tau cara pakai)
-local InfoLabel = Instance.new("TextLabel", MerchantBtnContainer)
-InfoLabel.Size = UDim2.new(1, 0, 1, -50)
-InfoLabel.Position = UDim2.new(0, 0, 0, 50)
+-- Label info
+local InfoLabel = Instance.new("TextLabel", MerchantFrame)
+InfoLabel.Size = UDim2.new(1, 0, 0, 30)
+InfoLabel.Position = UDim2.new(0, 10, 0, 100)
 InfoLabel.BackgroundTransparency = 1
 InfoLabel.Font = Enum.Font.GothamMedium
-InfoLabel.Text = "Klik tombol di atas → shop langsung muncul!\n(Tanpa harus ke NPC)"
+InfoLabel.Text = "Klik tombol di atas → shop langsung terbuka tanpa ke NPC"
 InfoLabel.TextColor3 = Theme.TextSecondary
 InfoLabel.TextSize = 12
 InfoLabel.TextWrapped = true
