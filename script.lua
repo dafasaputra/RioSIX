@@ -712,6 +712,57 @@ local function CreateShopCategory(name)
 end
 
 CreateShopCategory("Merchant")
+
+-- Di dalam CreateShopCategory("Merchant") - ganti placeholder TextLabel lama dengan ini
+local MerchantBtnContainer = Instance.new("Frame", CatFrame)
+MerchantBtnContainer.Size = UDim2.new(1, -20, 1, -40)
+MerchantBtnContainer.Position = UDim2.new(0, 10, 0, 40)
+MerchantBtnContainer.BackgroundTransparency = 1
+
+-- Tombol Open Alien Merchant Shop Instan
+local OpenMerchantBtn = Instance.new("TextButton", MerchantBtnContainer)
+OpenMerchantBtn.Size = UDim2.new(1, 0, 0, 45)
+OpenMerchantBtn.BackgroundColor3 = Theme.Accent
+OpenMerchantBtn.Text = "🛒 Open Alien Merchant (Instant)"
+OpenMerchantBtn.TextColor3 = Color3.new(1,1,1)
+OpenMerchantBtn.Font = Enum.Font.GothamBold
+OpenMerchantBtn.TextSize = 14
+Instance.new("UICorner", OpenMerchantBtn).CornerRadius = UDim.new(0, 8)
+AddStroke(OpenMerchantBtn, Theme.AccentHover, 2)
+
+OpenMerchantBtn.MouseButton1Click:Connect(function()
+    pcall(function()
+        -- 1. Cancel Crafting dulu (cleanup)
+        local RF_Cancel = GetRemote("RF/CancelCrafting")
+        if RF_Cancel then
+            RF_Cancel:InvokeServer()  -- tanpa args
+        end
+        
+        task.wait(0.1)  -- delay kecil
+        
+        -- 2. Dialogue Ended (buka shop)
+        local RE_Dialogue = GetRemote("RE/DialogueEnded")
+        if RE_Dialogue then
+            RE_Dialogue:FireServer("Alien Merchant", 1, 1)
+        end
+        
+        task.wait(0.5)  -- tunggu shop GUI muncul
+        
+        ShowNotification("🛒 Alien Merchant Shop dibuka!", false)
+    end)
+end)
+
+-- Label info (opsional, biar tau cara pakai)
+local InfoLabel = Instance.new("TextLabel", MerchantBtnContainer)
+InfoLabel.Size = UDim2.new(1, 0, 1, -50)
+InfoLabel.Position = UDim2.new(0, 0, 0, 50)
+InfoLabel.BackgroundTransparency = 1
+InfoLabel.Font = Enum.Font.GothamMedium
+InfoLabel.Text = "Klik tombol di atas → shop langsung muncul!\n(Tanpa harus ke NPC)"
+InfoLabel.TextColor3 = Theme.TextSecondary
+InfoLabel.TextSize = 12
+InfoLabel.TextWrapped = true
+
 CreateShopCategory("Charm")
 CreateShopCategory("Bobber")
 CreateShopCategory("Rod")
