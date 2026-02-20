@@ -711,7 +711,6 @@ local function CreateShopCategory(name)
     Placeholder.TextWrapped = true
 end
 
-CreateShopCategory("Merchant")
 CreateShopCategory("Charm")
 CreateShopCategory("Bobber")
 CreateShopCategory("Rod")
@@ -749,20 +748,53 @@ Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 8)
 AddStroke(OpenBtn, Theme.AccentHover, 2)
 
 OpenBtn.MouseButton1Click:Connect(function()
+    print("[DEBUG] Tombol Merchant diklik!")
+    ShowNotification("[DEBUG] Tombol diklik, mulai buka shop...", false)
+    
     pcall(function()
-        -- Cancel Crafting dulu
-        local RF_Cancel = GetRemote("RF/CancelCrafting")
-        if RF_Cancel then RF_Cancel:InvokeServer() end
+        -- 1. Path full RF/CancelCrafting (dari yang lu kasih)
+        local RF_Cancel = game:GetService("ReplicatedStorage")
+            :WaitForChild("Packages")
+            :WaitForChild("_Index")
+            :WaitForChild("sleitnick_net@0.2.0")
+            :WaitForChild("net")
+            :WaitForChild("RF/CancelCrafting")
         
-        task.wait(0.1)
+        if RF_Cancel then
+            print("[DEBUG] CancelCrafting ditemukan")
+            RF_Cancel:InvokeServer()
+            ShowNotification("CancelCrafting OK", false)
+        else
+            print("[ERROR] RF/CancelCrafting GA KETEMU!")
+            ShowNotification("ERROR: CancelCrafting ga ketemu!", true)
+            return
+        end
         
-        -- Dialogue Ended buka shop
-        local RE_Dialogue = GetRemote("RE/DialogueEnded")
-        if RE_Dialogue then RE_Dialogue:FireServer("Alien Merchant", 1, 1) end
+        task.wait(0.2)
         
-        task.wait(0.4)
+        -- 2. Path full RE/DialogueEnded (dari yang lu kasih)
+        local RE_Dialogue = game:GetService("ReplicatedStorage")
+            :WaitForChild("Packages")
+            :WaitForChild("_Index")
+            :WaitForChild("sleitnick_net@0.2.0")
+            :WaitForChild("net")
+            :WaitForChild("RE/DialogueEnded")
         
-        ShowNotification("🛒 Alien Merchant Shop dibuka!", false)
+        if RE_Dialogue then
+            print("[DEBUG] DialogueEnded ditemukan, FireServer...")
+            local args = { "Alien Merchant", 1, 1 }
+            RE_Dialogue:FireServer(unpack(args))
+            ShowNotification("DialogueEnded OK, shop seharusnya muncul", false)
+        else
+            print("[ERROR] RE/DialogueEnded GA KETEMU!")
+            ShowNotification("ERROR: DialogueEnded ga ketemu!", true)
+            return
+        end
+        
+        task.wait(0.6)  -- kasih waktu GUI muncul
+        
+        print("[DEBUG] Proses buka shop selesai")
+        ShowNotification("🛒 Alien Merchant Shop dibuka! Cek GUI merchant", false)
     end)
 end)
 
