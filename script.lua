@@ -711,6 +711,7 @@ local function CreateShopCategory(name)
     Placeholder.TextWrapped = true
 end
 
+CreateShopCategory("Merchant")
 CreateShopCategory("Charm")
 CreateShopCategory("Bobber")
 CreateShopCategory("Rod")
