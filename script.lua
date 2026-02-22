@@ -1170,7 +1170,7 @@ task.spawn(function()
                     -- Equip rod dengan cooldown
                     if shouldEquipRod and (tick() - lastEquipTime) > equipCooldown then
                         pcall(function()
-                            local EquipRemote = GetRemote("RE/EquipToolFromHotbar")
+                            local EquipRemote = GetRemote("RE/JCLAuWFF: FqCuDG9d@")
                             if EquipRemote then
                                 EquipRemote:FireServer(1)
                                 lastEquipTime = tick()
