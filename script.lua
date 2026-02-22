@@ -1081,10 +1081,10 @@ local function IF_Init()
     local s,r=pcall(function()
         local np=ReplicatedStorage:WaitForChild("Packages",5):WaitForChild("_Index",5):WaitForChild("sleitnick_net@0.2.0",5):WaitForChild("net",5)
         if np then
-            IF.Remotes.Charge=np:WaitForChild("RF/ChargeFishingRod",3)
-            IF.Remotes.Request=np:WaitForChild("RF/RequestFishingMinigameStarted",3)
+            IF.Remotes.Charge=np:WaitForChild(,3)
+            IF.Remotes.Request=np:WaitForChild("RF/H3E;jo|@AB=p=vCCLwA",3)
             IF.Remotes.Cancel=np:WaitForChild("RF/CancelFishingInputs",3)
-            IF.Remotes.Claim=np:WaitForChild("RF/CatchFishCompleted",3)
+            IF.Remotes.Claim=np:WaitForChild("RF/W7HMjvK|7M<kD5\"<El5ct8,B3FL?>",3)
             IF.Initialized=IF.Remotes.Charge and IF.Remotes.Request and IF.Remotes.Cancel and IF.Remotes.Claim
             return IF.Initialized
         end
