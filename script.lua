@@ -715,77 +715,70 @@ CreateShopCategory("Charm")
 CreateShopCategory("Bobber")
 CreateShopCategory("Rod")
 
--- Merchant manual (biar pasti muncul, tanpa ganti fungsi lama)
-local MerchantFrame = Instance.new("Frame", Page_Shop)
-MerchantFrame.Name = "MerchantCategory"
-MerchantFrame.BackgroundColor3 = Theme.Content
-MerchantFrame.Size = UDim2.new(1, -10, 0, 220)
-MerchantFrame.BorderSizePixel = 0
-Instance.new("UICorner", MerchantFrame).CornerRadius = UDim.new(0, 8)
-local stroke = Instance.new("UIStroke", MerchantFrame)
-stroke.Color = Theme.Border
-stroke.Thickness = 1
+-- Dua tombol Open & Close Merchant (simpel banget)
+local BtnContainer = Instance.new("Frame", CatFrame)
+BtnContainer.Size = UDim2.new(1, -20, 1, -50)
+BtnContainer.Position = UDim2.new(0, 10, 0, 40)
+BtnContainer.BackgroundTransparency = 1
 
-local MerchantLabel = Instance.new("TextLabel", MerchantFrame)
-MerchantLabel.BackgroundTransparency = 1
-MerchantLabel.Size = UDim2.new(1, 0, 0, 30)
-MerchantLabel.Font = Enum.Font.GothamBold
-MerchantLabel.Text = "Merchant"
-MerchantLabel.TextColor3 = Theme.AccentHover
-MerchantLabel.TextSize = 16
-MerchantLabel.TextXAlignment = Enum.TextXAlignment.Center
-
--- Tombol Open Alien Merchant Instan
-local OpenBtn = Instance.new("TextButton", MerchantFrame)
-OpenBtn.Size = UDim2.new(1, -20, 0, 50)
-OpenBtn.Position = UDim2.new(0, 10, 0, 40)
-OpenBtn.BackgroundColor3 = Theme.Accent
-OpenBtn.Text = "🛒 Open Alien Merchant (Instant)"
+-- Tombol OPEN Merchant
+local OpenBtn = Instance.new("TextButton", BtnContainer)
+OpenBtn.Size = UDim2.new(0.48, 0, 0, 50)
+OpenBtn.Position = UDim2.new(0, 0, 0, 0)
+OpenBtn.BackgroundColor3 = Theme.Success
+OpenBtn.Text = "OPEN MERCHANT"
 OpenBtn.TextColor3 = Color3.new(1,1,1)
 OpenBtn.Font = Enum.Font.GothamBold
 OpenBtn.TextSize = 14
 Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 8)
-AddStroke(OpenBtn, Theme.AccentHover, 2)
+AddStroke(OpenBtn, Theme.Success, 2)
 
 OpenBtn.MouseButton1Click:Connect(function()
-    print("[Merchant] Tombol diklik!")
-    ShowNotification("[Merchant] Mulai buka Alien Merchant...", false)
-    
     pcall(function()
-        -- 1. CancelCrafting dulu (cleanup, dari nomor 1 lu)
-        local RS = game:GetService("ReplicatedStorage")
-        local Packages = RS:WaitForChild("Packages")
-        local Index = Packages:WaitForChild("_Index")
-        local Sleitnick = Index:WaitForChild("sleitnick_net@0.2.0")
-        local Net = Sleitnick:WaitForChild("net")
+        -- Cancel dulu biar bersih
+        local RF_Cancel = GetRemote("RF/CancelCrafting")
+        if RF_Cancel then RF_Cancel:InvokeServer() end
         
-        local RF_Cancel = Net:WaitForChild("RF/CancelCrafting")
-        if RF_Cancel then
-            RF_Cancel:InvokeServer()
-            print("[Merchant] CancelCrafting OK")
-        else
-            print("[Merchant] CancelCrafting GA KETEMU!")
-            ShowNotification("ERROR: CancelCrafting ga ketemu!", true)
-            return
-        end
+        task.wait(0.1)
         
-        task.wait(0.2)
-        
-        -- 2. DialogueEnded (kode lu nomor 2, langsung pakai path full)
-        local RE_Dialogue = Net:WaitForChild("RE/DialogueEnded")
+        -- Open shop (DialogueEnded)
+        local RE_Dialogue = GetRemote("RE/DialogueEnded")
         if RE_Dialogue then
             local args = { "Alien Merchant", 1, 1 }
             RE_Dialogue:FireServer(unpack(args))
-            print("[Merchant] DialogueEnded fired! Shop seharusnya muncul")
-            ShowNotification("DialogueEnded OK, cek shop muncul ga", false)
-        else
-            print("[Merchant] DialogueEnded GA KETEMU!")
-            ShowNotification("ERROR: DialogueEnded ga ketemu!", true)
-            return
         end
         
-        task.wait(0.8)
-        ShowNotification("🛒 Proses selesai! Cek layar merchant", false)
+        ShowNotification("🛒 Merchant dibuka!", false)
+    end)
+end)
+
+-- Tombol CLOSE Merchant
+local CloseBtn = Instance.new("TextButton", BtnContainer)
+CloseBtn.Size = UDim2.new(0.48, 0, 0, 50)
+CloseBtn.Position = UDim2.new(0.52, 0, 0, 0)
+CloseBtn.BackgroundColor3 = Theme.Error
+CloseBtn.Text = "CLOSE MERCHANT"
+CloseBtn.TextColor3 = Color3.new(1,1,1)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 14
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
+AddStroke(CloseBtn, Theme.Error, 2)
+
+CloseBtn.MouseButton1Click:Connect(function()
+    pcall(function()
+        -- Close / cleanup pakai CancelCrafting
+        local RF_Cancel = GetRemote("RF/CancelCrafting")
+        if RF_Cancel then RF_Cancel:InvokeServer() end
+        
+        -- Optional: disable GUI shop kalau ketemu
+        local playerGui = game.Players.LocalPlayer.PlayerGui
+        for _, gui in pairs(playerGui:GetChildren()) do
+            if gui.Name:find("Merchant") or gui.Name:find("Shop") or gui.Name:find("Alien") then
+                gui.Enabled = false
+            end
+        end
+        
+        ShowNotification("Merchant ditutup!", false)
     end)
 end)
 
